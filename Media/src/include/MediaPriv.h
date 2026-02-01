@@ -22,8 +22,24 @@ typedef struct
 	MediaEncCallback        AICallback;
 }MEDIA_INNER_PARAM_T;
 
+typedef struct
+{
+  int width;
+  int height;
+  int width_stride;
+  int height_stride;
+  int format;
+  char *virt_addr;
+  int fd;
+} IMAGE_FRAME_T;
+
+
 MEDIA_INNER_PARAM_T* Media_Get_InnerParam(void);
 MEDIA_FORMAT_TYPE_E MediaForccFrame(char * strFormate);
+RgaSURF_FORMAT MediaRgaFmtTranslation(MEDIA_FORMAT_TYPE_E eType);
+VO_CFG_PARAM_T* Media_Get_VoParam(UINT32 uChan);
+
+
 
 
 #ifdef MEDIARKMPP

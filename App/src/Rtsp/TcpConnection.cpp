@@ -128,6 +128,7 @@ void TcpConnection::handleError()
 
 void TcpConnection::readCallback(void* arg)
 {
+	LOG_INFO("readCallback\n");
     TcpConnection* tcpConnection = (TcpConnection*)arg;
     tcpConnection->handleRead();
 }

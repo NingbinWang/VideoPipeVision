@@ -3,6 +3,7 @@
 #include "Logger.h"
 #include <time.h>
 #include <sys/time.h>
+#include "MediaPriv.h"
 
 INT32 MediaOsdInit(VOID)
 {

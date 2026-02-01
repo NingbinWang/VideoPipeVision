@@ -17,6 +17,17 @@ VI_CFG_PARAM_T* Media_Get_ViParam(UINT32 uChan)
     return &pMediaInitParam->astViCfgParam[uChan];
 }
 
+VO_CFG_PARAM_T* Media_Get_VoParam(UINT32 uChan)
+{
+	if(pMediaInitParam == NULL){
+		printf("[%s:%d]Media_Get_ViParam error YOU MSUT init media param\n", __FUNCTION__, __LINE__);
+		return NULL;
+	}
+    return &pMediaInitParam->astVoCfgParam[uChan];
+}
+
+
+
 MEDIA_INNER_PARAM_T* Media_Get_InnerParam(void)
 {
 	return pInnerParam;
@@ -45,6 +56,27 @@ MppDecoder *Media_Getmppdecoder(void)
 {
 	return mppdecoder;
 }
+
+
+
+RgaSURF_FORMAT MediaRgaFmtTranslation(MEDIA_FORMAT_TYPE_E eType)
+{
+    switch(eType){
+			case MEDIA_FORMAT_YUV420SP:
+				return RK_FORMAT_YCbCr_420_SP;
+			case MEDIA_FORMAT_BGRA8888:
+				return RK_FORMAT_BGRA_8888;
+			default:
+				return RK_FORMAT_UNKNOWN;
+    }
+	return RK_FORMAT_UNKNOWN;
+}
+
+
+
+
+
+
 #endif
 
 MEDIA_FORMAT_TYPE_E MediaForccFrame(char * strFormate)
@@ -82,7 +114,7 @@ INT32 MediaInit(MEDIA_PARAM_T* pParam)
 		pParam->astEncCfgParam[u32Chan].uChan = u32Chan;
 		pInnerParam->apEnc[u32Chan] = MediaEnc::createNew(pParam->astEncCfgParam[u32Chan]);
 	}
-	pInnerParam->pStream = MediaStream::createNew(pParam);
+	pInnerParam->pStream = MediaStream::createNew(*pParam);
 
 	pInnerParam->apEnc[0]->MediaEncStartThread();
 

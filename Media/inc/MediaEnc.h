@@ -3,9 +3,12 @@
 #include "MediaConfig.h"
 #include "MediaFrame.h"
 #include "Common.h"
+#include "SysMutex.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif/*__cplusplus*/
+
 typedef enum {
     MEDIA_ENC_CODETYPE_Unused,             /**< Value when coding is N/A */
     MEDIA_ENC_CODETYPE_AutoDetect,         /**< Autodetection of coding type */
@@ -41,6 +44,15 @@ typedef enum {
     MEDIA_ENC_RCMODE_SMTRC,
     MEDIA_ENC_RCMODE_BUTT
 } MEDIA_ENC_RCMODE_E;
+
+typedef enum
+{
+    ENC_FRM_I   = 0,
+    ENC_FRM_P   = 1,
+    ENC_FRM_B   = 2,
+    ENC_FRM_MAX,
+}MEDIA_ENC_FRAME_TYPE_E;
+
 
 typedef struct 
 {
@@ -79,6 +91,7 @@ typedef struct
     UINT    uEncErrCnt;                            /*编码器配置出错次数*/
 }MEDIA_ENCODER_STAT_PARAM_T;
 
+//编码器的状态信息
 typedef struct
 {   
     MEDIA_ENCODER_BASIC_PARAM_T  stEncBasicParam;       /*编码基础参数*/
@@ -86,16 +99,64 @@ typedef struct
     MEDIA_ENCODER_STAT_PARAM_T   stEncStatParam;        /*编码统计参数*/
 }MEDIA_ENCODER_STATUS_T;
 
+/*编码后码流共享缓存接口定义*/
+typedef struct 
+{
+	MUTEX_ID                 mEncPool;
+    PUINT8               	 addr[MAX_SHARE_ADDR];   /*多核/多进程访问地址 */
+    UINT32                   totalLen;       		/*编码缓冲长度*/
+    UINT32                   wIdx;           		/*编码缓冲写索引*/
+    UINT32                   rIdx;           		/*编码缓冲读索引*/
+	UINT8		             res[4];
+}ENC_SHARE_BUF_T;
+
+
+
+typedef struct 
+{
+   BOOL                   bStart;          /*通道使能*/
+   MEDIA_ENC_CODETYPE_E   uEncType;        /*编码格式*/
+   UINT                   uEncW;           /*编码宽*/
+   UINT                   uEncH;           /*编码高*/
+   UINT   uEncFps;         /*编码帧率*/
+   UINT   uEncBps;         /*编码码率*/
+   UINT   uEncBpsType;     /*编码码率控制方式*/
+   UINT   uEncGop;         /*编码I帧间隔*/
+   UINT   uEncFrm;         /*编码帧数*/
+   UINT   uEncLostFrm;     /*编码丢帧数目累加*/
+   UINT   uaEncType;        /*音频编码格式*/
+   UINT   uaEncFrm;         /*音频编码帧数*/
+   UINT   uaEncLostFrm;     /*音频编码丢帧数目累加*/
+   UINT   uaEncDenoise;     /*音频降噪*/
+   UINT   packType;        /*封装流类型*/
+   UINT   dropMode;        /*覆盖方式*/
+   UINT   stremType;       /*媒体流类型*/
+}MEDIA_ENC_STATUS_T;
+
+
 typedef struct
 {
-	volatile  UINT                  uChan;                 /*编码通道*/
+	UINT                            uChan;                 /*编码通道*/
     MEDIA_ENC_CODETYPE_E            eEncoderType;          /* 编码类型*/
     CHAR                            strStreamType[6];      // 输入视频流的类型
     UINT                            uEncW;                 /* 编码输入宽 */
     UINT                            uEncH;                 /* 编码输入高 */
     MEDIA_ENC_RCMODE_E              eRcMode;               /* 码率控制类型(0:变码率;1:定码率;2:AVBR) */
     UINT                            uCfgEncfps;            /* 编码帧率 */
+	MEDIA_ENC_STATUS_T              stEncStatus;           //编码的状态
 } MEDIA_ENC_PARAM_T;
+
+
+typedef struct
+{
+	UINT                        uChan;                 /*编码通道*/
+	MEDIA_VIDEO_FRAME_T 		stVideoFrame;
+	UINT64						u64TimeStamp;		   /* 时间戳 */
+	UINT32						u32NaluNum; 		   /* nalu个数 */
+	UINT32						res[1]; 				/* 预留，兼容64位平台*/
+	NALU_T						astNalu[MAX_NALU_NUM];	/* nalu长度 */
+}MEDIA_ENC_FRAME_T;
+
 
 #ifdef __cplusplus
 }

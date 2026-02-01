@@ -55,8 +55,6 @@ IOEvent* IOEvent::createNew(int fd, void* arg)
 {
     if(fd < 0)
         return NULL;
-
-    //return new IOEvent(fd, arg);
     return New<IOEvent>::allocate(fd, arg);
 }
 
@@ -64,8 +62,6 @@ IOEvent* IOEvent::createNew(int fd)
 {
     if(fd < 0)
         return NULL;
-    
-    //return new IOEvent(fd, NULL);
     return New<IOEvent>::allocate(fd, (void*)0);
 }
 

@@ -7,7 +7,6 @@
 #ifndef DIV_ROUND_UP
 #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 #endif
-#define _AARCH64_
 #if defined(_ARM_) 
 #define BITS_PER_LONG 		(32)
 #elif  defined(_AARCH64_)

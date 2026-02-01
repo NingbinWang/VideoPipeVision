@@ -1,4 +1,4 @@
-#include "MediaPriv.h"
+#include "MediaAiInner.h"
 #include "MppEncoder.h"
 #include "drawing.h"
 #include "PostProcess.h"

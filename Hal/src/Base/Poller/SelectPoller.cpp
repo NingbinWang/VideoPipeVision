@@ -109,19 +109,15 @@ void SelectPoller::handleEvent()
         LOG_ERROR("select err\n");
         return;
     }
-
     for(IOEventMap::iterator it = mEventMap.begin(); it != mEventMap.end(); ++it)
     {
         rEvent = 0;
         if(FD_ISSET(it->first, &readSet))
             rEvent |= IOEvent::EVENT_READ;
-
         if(FD_ISSET(it->first, &writeSet))
             rEvent |= IOEvent::EVENT_WRITE;
-
         if(FD_ISSET(it->first, &exceptionSet))
             rEvent |= IOEvent::EVENT_ERROR;
-
         if(rEvent != 0)
         {
             it->second->setREvent(rEvent);
@@ -133,6 +129,5 @@ void SelectPoller::handleEvent()
     {
         (*it)->handleEvent();
     }
-
     mEvents.clear();
 }

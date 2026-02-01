@@ -45,11 +45,11 @@ INT32 MediaVi::GetFrameFromQueue(MEDIA_VIDEO_FRAME_T *pstFrameInfo, INT32 timeou
 	pstFrameInfo->stVideoHeader.eFormatType = MediaForccFrame(mpParams->strFormat);
 	if(mpCapture->capturepoll(timeout)){
 #ifdef MEDIARKMPP
-		pstFrameInfo->stYuvframe.pPhyAddr = mpCapture->readFrame(&pstFrameInfo->stVideoHeader.uIndex);
-		pstFrameInfo->stYuvframe.pVirAddr = mpp_buffer_get_ptr(pstFrameInfo->stYuvframe.pPhyAddr);
-		pstFrameInfo->stVideoHeader.iframeNum = mpp_buffer_get_index((MppBuffer)pstFrameInfo->stYuvframe.pPhyAddr);
-		pstFrameInfo->stVideoHeader.sSize = mpp_buffer_get_size((MppBuffer)pstFrameInfo->stYuvframe.pPhyAddr);
-		mpp_buffer_sync_end(pstFrameInfo->stYuvframe.pPhyAddr);
+		pstFrameInfo->stImageFrame.pPhyAddr = mpCapture->readFrame(&pstFrameInfo->stVideoHeader.uIndex);
+		pstFrameInfo->stImageFrame.pVirAddr = mpp_buffer_get_ptr(pstFrameInfo->stImageFrame.pPhyAddr);
+		pstFrameInfo->stVideoHeader.iframeNum = mpp_buffer_get_index((MppBuffer)pstFrameInfo->stImageFrame.pPhyAddr);
+		pstFrameInfo->stImageFrame.sSize = mpp_buffer_get_size((MppBuffer)pstFrameInfo->stImageFrame.pPhyAddr);
+		mpp_buffer_sync_end(pstFrameInfo->stImageFrame.pPhyAddr);
 #endif
 	}
 	

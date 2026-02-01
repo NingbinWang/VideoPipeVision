@@ -4,18 +4,32 @@
 #include "Thread.h"
 #include "SysTime.h"
 #include "MediaStream.h"
+#include "MediaPriv.h"
+#include "MediaDecInner.h"
+#include "SysMutex.h"
 
-MediaStream* MediaStream::createNew(MEDIA_PARAM_T* pParam)
+
+#define MAX_VIDEO_ELEMENTARY_LEN    (0x500000)
+#define MAX_AUDIO_ELEMENTARY_LEN    (0x1000)
+#define MAX_PRIVT_ELEMENTARY_LEN    (64*1024)
+#define RTP_STREAM_LEN           (1400)
+#define MAX_PES_PACKET_LEN       (65496)
+#define MAX_VIDEO_BUFFSIZE          (0x400000)
+
+
+
+MediaStream* MediaStream::createNew(MEDIA_PARAM_T& Param)
 {
-    return New<MediaStream>::allocate(pParam);
+    return New<MediaStream>::allocate(&Param);
 }
 
 
-MediaStream::MediaStream(MEDIA_PARAM_T *pParam)
+MediaStream::MediaStream(MEDIA_PARAM_T *pParam):
+mpParam(pParam)
 {
-	mpParam = pParam;
-	mpSendStreamToRawPoolMutex = Mutex::createNew();
-	mpSendStreamToRecPoolMutex = Mutex::createNew();
+	//mpSendStreamToRecPoolMutex = Mutex::createNew();
+	//mpSendStreamToDecPoolMutex = Mutex::createNew();
+	//mpSendStreamToEncPoolMutex = Mutex::createNew();
 }
 
 MediaStream::~MediaStream() 
@@ -23,192 +37,129 @@ MediaStream::~MediaStream()
 	
 }
 
-void MediaStream::MakeEsStreamElement(MEDIA_STREAM_ELEMENT*pStream,UINT uChan, UINT uLen, UINT uType,UINT uStandedTime, DATE_TIME_T stNow)
+INT32  MediaStream::StreamPack(MEDIA_ENC_FRAME_T* pFrame)
 {
-    pStream->u32Magic   = STREAM_ELEMENT_MAGIC;
-    pStream->eType = uType;
-    pStream->u32dataLen = uLen;
-    pStream->stAbsTime = stNow;
-    pStream->u32TimeStamp = uStandedTime;
-    pStream->u8Id = 0;
-    pStream->u8Chan = (UINT8)uChan;
-}
-
-void MediaStream::MakeEsStreamVideoElement(MEDIA_STREAM_ELEMENT*pStream,UINT uChan, UINT uLen,UINT uType,DATE_TIME_T stNow,MEDIA_PACK_VIDEO_CHN_ATTR_T *pParam)
-{
-    pStream->u32Magic   = STREAM_ELEMENT_MAGIC;
-    pStream->eType = uType;
-    pStream->u32dataLen = uLen;
-    pStream->stAbsTime = stNow;
-    pStream->streamType= pParam->encCfg.streamType;
-    pStream->timeStamp = pParam->timeStamp;
-    pStream->id = 0;
-    pStream->chan = (UINT8)chan;
-
-	pStream->videoInfo.videoStreamType = getVideoStreamType(pParam->encCfg.encType.videoType);
-	pStream->videoInfo.width = pParam->width;
-	pStream->videoInfo.height = pParam->height;
-	pStream->videoInfo.fps = pParam->encCfg.fps & 0xFF;
-	pStream->videoInfo.bps = pParam->encCfg.bps;
-	pStream->videoInfo.IFrameInterval = pParam->encCfg.IFrameInterval;
-    pStream->videoInfo.bFristFrm = pParam->bFirstFrm;
-
-	pStream->audioInfo.audioStreamType = getAudioStreamType(pParam->encCfg.encType.audioType);
-	pStream->audioInfo.audio_num	 = 0;
-
-	switch(pStream->audioInfo.audioStreamType)
+	UINT uIndex = 0;
+	//MEDIA_ELEMENTARY_STREAM_T stEleStream;
+	MEDIA_STREAM_PACK_PARAM_T stParam;
+	memset((void *)&stParam, 0, sizeof(MEDIA_STREAM_PACK_PARAM_T));
+	//memset((void *)&stEleStream, 0, sizeof(MEDIA_ELEMENTARY_STREAM_T));
+	stParam.uNaluNum = pFrame->u32NaluNum;
+	for(uIndex = 0;uIndex < stParam.uNaluNum;uIndex++)
 	{
-		case STREAM_TYPE_AUDIO_MPEG2:
-			pStream->audioInfo.frame_len	 = 592;
-			pStream->audioInfo.sample_rate	 = 16000;
-			pStream->audioInfo.bit_rate      = 64000;
-			break;
-		case STREAM_TYPE_AUDIO_MPEG1:
-			pStream->audioInfo.frame_len	 = 592;
-			pStream->audioInfo.sample_rate	 = 16000;
-			pStream->audioInfo.bit_rate      = 64000;
-			break;
-        case STREAM_TYPE_AUDIO_AAC:
-            pStream->audioInfo.frame_len     = 160;
-            pStream->audioInfo.sample_rate   = 16000;
-            pStream->audioInfo.bit_rate      = 64000;
-			break;
-		case STREAM_TYPE_AUDIO_G722_1:
-			pStream->audioInfo.frame_len	 = 80;
-			pStream->audioInfo.sample_rate	 = 16000;
-			pStream->audioInfo.bit_rate 	 = 25*80*8;
-			break;
-		case STREAM_TYPE_AUDIO_G711A:
-			pStream->audioInfo.frame_len	 = 320;
-			pStream->audioInfo.sample_rate	 = 8000;
-			pStream->audioInfo.bit_rate 	 = 25*320*8;
-			break;
-		case STREAM_TYPE_AUDIO_G711U:
-			pStream->audioInfo.frame_len	 = 320;
-			pStream->audioInfo.sample_rate	 = 8000;
-			pStream->audioInfo.bit_rate 	 = 25*320*8;
-			break;
-		case STREAM_TYPE_AUDIO_G726:
-			pStream->audioInfo.frame_len	 = 80;
-			pStream->audioInfo.sample_rate	 = 8000;
-			pStream->audioInfo.bit_rate  = 25*80*8;
-			break;
-		case STREAM_TYPE_AUDIO_L16: 
-			pStream->audioInfo.frame_len	 = 1280;
-			pStream->audioInfo.sample_rate	 = 16000;
-			pStream->audioInfo.bit_rate	 = 25*1280*8;
-			break;
-		default:
-			break;
-	}	
+		stParam.astNalu[uIndex].u32NaluLen = pFrame->astNalu[uIndex].u32NaluLen;
+		stParam.astNalu[uIndex].u32NaluType = pFrame->astNalu[uIndex].u32NaluType;
+		stParam.astNalu[uIndex].pNaluPtr = pFrame->astNalu[uIndex].pNaluPtr;
+	}
+	return OK;
 }
 
-/*******************************************
-* 功  能：PS视频流封装
-*
-* 参  数：chan             -I  通道号
-*         pEncAttr         -I  编码参数
-*
-* 返回值：返回状态码
-********************************************/
-static INT MediaStream:PackPSStream(MEDIA_STREAM_PACK_CTRL_T  *pCtrl, MEDIA_STREAM_PACK_PATAM_T *pParam)
+INT32  MediaStream::StreamFrameConvert(MEDIA_VIDEO_FRAME_T* pFrameInfo,UINT uVoChan)
 {
-    INT32 i = 0;
-    INT32 nRet = HIKDSP_OK;
-    UINT clock;    
-    PUINT8 pOutBuf = pParam->out_buf;
-    UINT32 outBufSize = pParam->out_buf_length;
-    PSMUX_PROCESS_PARAM muxPrcParam;
-    clock = pParam->timeStamp * 45;
-    
-    if(pCtrl->psHandle == NULL)
-    {
-   
-         LOG_ERROR("psHandle is null !!!\n");
-        return HIKDSP_ERR_INVALID_PARAM;
-    }
-    
-    if((pParam->naluNum == 0) || (pParam->out_buf == NULL) || (pParam->out_buf_length == 0))
-    {
-        PACK_PRT_ERROR("invalid param !!!\n");
-        return HIKDSP_ERR_INVALID_PARAM;
-    }
-    
-    OsalMem_set(&muxPrcParam, 0, sizeof(muxPrcParam), GET_LINE);
-    
-    muxPrcParam.company_mark = CO_TYPE_HK;
-    muxPrcParam.camera_mark = CAMERA_TYPE_UNDEF;
-    
-    if(pParam->picture_mode == I_FRAME_MODE)
-    {
-        muxPrcParam.global_time.year=(UINT)pParam->now.year;
-        muxPrcParam.global_time.month=(UINT)pParam->now.month;
-        muxPrcParam.global_time.date=(UINT)pParam->now.day;
-        muxPrcParam.global_time.hour=(UINT)pParam->now.hour;
-        muxPrcParam.global_time.minute=(UINT)pParam->now.minute;
-        muxPrcParam.global_time.second=(UINT)pParam->now.second;
-        muxPrcParam.global_time.msecond=(UINT)pParam->now.milliSecond;
-        muxPrcParam.is_key_frame=TRUE;
-        muxPrcParam.frame_type=FRAME_TYPE_VIDEO_IFRAME;
-    }
-    else if (pParam->picture_mode == P_FRAME_MODE)
-    {
-        muxPrcParam.is_key_frame=FALSE;
-        muxPrcParam.frame_type=FRAME_TYPE_VIDEO_PFRAME;
-    }
-    else if ((pParam->picture_mode == AUDIO_I_FRAME_MODE) || (pParam->picture_mode == AUDIO_P_FRAME_MODE))
-    {
-        muxPrcParam.is_key_frame=FALSE;
-        muxPrcParam.frame_type=FRAME_TYPE_AUDIO_FRAME;
-    }
-    else if (pParam->picture_mode == PRIVT_FRAME_MODE)
-    {
-        muxPrcParam.is_key_frame=FALSE;
-        muxPrcParam.frame_type=FRAME_TYPE_PRIVT_FRAME;
-    }
-    else
-    {
-        PACK_PRT_ERROR("invalid picture_mode = %d \n",pParam->picture_mode);
-        return HIKDSP_ERR_INVALID_PARAM;
-    }
-    
-    for(i = 0; i < pParam->naluNum; i++)
-    {
-        muxPrcParam.sys_clk_ref=clock;
-        muxPrcParam.ptime_stamp=clock;
-        muxPrcParam.frame_num=pParam->frameNum;
-        muxPrcParam.unit_in_buf = pParam->nalu[i].nalu_ptr;
-        muxPrcParam.unit_in_len =pParam->nalu[i].nalu_len;
-        muxPrcParam.out_buf= pOutBuf;
-        muxPrcParam.out_buf_len = 0;
-        muxPrcParam.out_buf_size = outBufSize;
-        muxPrcParam.is_unit_start = 1;
-        muxPrcParam.is_unit_end   = 1;
-        muxPrcParam.is_first_unit = (i==0);
-        muxPrcParam.is_last_unit  = (i == (pParam->naluNum-1));
-		muxPrcParam.encrypt_round = pParam->encrypt_round[i];
-        
-        nRet = PSMUX_Process(pCtrl->psHandle,&muxPrcParam);
-        if (nRet == HIK_PSMUX_LIB_S_OK)
-        {
-            pOutBuf += muxPrcParam.out_buf_len;
-            outBufSize -= muxPrcParam.out_buf_len;
-            pParam->out_length += muxPrcParam.out_buf_len;
-        }
-        else
-        {
-            PACK_PRT_ERROR("PSMux process error!0x%x\n",nRet);
-            return HIKDSP_ERR_UNDEFINED;
-        }
-    }
-        
-    return HIKDSP_OK;
+	IMAGE_FRAME_T srcimg = {0};
+	IMAGE_FRAME_T dstimg = {0};
+	UINT32 uFrameSize = 0;
+	CHAR* pPackOutBuf = (CHAR*)SysMemory_malloc(MAX_VIDEO_ELEMENTARY_LEN);
+	CHAR *pOutputbuf = (CHAR*)SysMemory_malloc(MAX_VIDEO_BUFFSIZE);
+	CHAR *pFramebuf = (CHAR*)SysMemory_malloc(MAX_VIDEO_BUFFSIZE);
+	MEDIA_VIDEO_FRAME_T stDecFrameInfo;
+	memset((void *)&stDecFrameInfo, 0, sizeof(MEDIA_VIDEO_FRAME_T));
+	memset((void *)pPackOutBuf,0,MAX_VIDEO_ELEMENTARY_LEN);
+	memset((void *)pOutputbuf,0,MAX_VIDEO_BUFFSIZE);
+	srcimg.width =  pFrameInfo->stVideoHeader.u32ImageWidth;
+    srcimg.height = pFrameInfo->stVideoHeader.u32ImageHeight;
+    srcimg.width_stride = pFrameInfo->stVideoHeader.u32ImageWidth;
+    srcimg.height_stride = pFrameInfo->stVideoHeader.u32ImageHeight;
+	SysMemory_copy((VOID *)pFramebuf, (VOID *)pFrameInfo->stImageFrame.pVirAddr, pFrameInfo->stImageFrame.sSize);
+    srcimg.virt_addr = pFramebuf;
+    srcimg.format = MediaRgaFmtTranslation(pFrameInfo->stVideoHeader.eFormatType);
+	dstimg.width =  (int)mpParam->astVoCfgParam[uVoChan].u32ImageWidth;
+    dstimg.height = (int)mpParam->astVoCfgParam[uVoChan].u32ImageHeight;
+    dstimg.width_stride = (int)mpParam->astVoCfgParam[uVoChan].u32ImageWidth;
+    dstimg.height_stride = (int)mpParam->astVoCfgParam[uVoChan].u32ImageHeight;
+    dstimg.virt_addr = (CHAR*)pOutputbuf;
+    dstimg.format =  MediaRgaFmtTranslation(mpParam->astVoCfgParam[uVoChan].eType);
+	MediaDecCvtcoloerVirt(&srcimg,&dstimg);
+	uFrameSize =  mpParam->astVoCfgParam[uVoChan].u32FrameSize;
+	stDecFrameInfo.stImageFrame.sSize = uFrameSize;
+	stDecFrameInfo.stVideoHeader.eFormatType = mpParam->astVoCfgParam[uVoChan].eType;
+	stDecFrameInfo.stVideoHeader.iframeNum = pFrameInfo->stVideoHeader.iframeNum;
+	stDecFrameInfo.stVideoHeader.u32ImageHeight = mpParam->astVoCfgParam[uVoChan].u32ImageHeight;
+	stDecFrameInfo.stVideoHeader.u32ImageWidth = mpParam->astVoCfgParam[uVoChan].u32ImageWidth;
+	stDecFrameInfo.stVideoHeader.iHeightStride = dstimg.height_stride;
+	stDecFrameInfo.stVideoHeader.iWidthStride = dstimg.width_stride;
+	//stDecFrameInfo.stImageFrame.pVirAddr = (VOID *)(pPackOutBuf+sizeof(MEDIA_VIDEO_FRAME_T));
+	SysMemory_copy((VOID *)pPackOutBuf, &stDecFrameInfo,sizeof(MEDIA_VIDEO_FRAME_T));
+	SysMemory_copy((VOID *)(pPackOutBuf+sizeof(MEDIA_VIDEO_FRAME_T)),pOutputbuf,uFrameSize);
+	SendStreamToDecPool(mpParam->astVoCfgParam[uVoChan].uDecChan,(PUINT8)pPackOutBuf,uFrameSize+sizeof(MEDIA_VIDEO_FRAME_T),0);
+	SysMemory_free(pPackOutBuf);
+	SysMemory_free(pOutputbuf);
+	SysMemory_free(pFramebuf);
+	return OK;
 }
 
+INT32  MediaStream::SendStreamToDecPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength,INT32 iDrop)
+{
+	UINT32 u32W = 0;
+	UINT32 u32R = 0;
+	UINT32 u32SpareLen = 0;
+	UINT32 u32Part1 = 0;
+	UINT32 u32Part2 = 0;
+	UINT32 u32TotalLen = 0;
+	PUINT8 ptr = NULL;
+    DEC_SHARE_BUF_T* pPool = &(mpParam->aDecPool[uChan]);
+	if(pStreamSrc == NULL)
+	{
+		LOG_ERROR("pStreamSrc is NULL\n");
+		return ERROR;
+	}
+	if((void *)pPool->addr[0] == NULL)
+	{
+		LOG_ERROR("addr is NULL\n");
+		return ERROR;
+	}
+	//uLength = (uLength + 3) & ~3; // 将 uLength 向上舍入到最小的、不小于它的 4 的倍数，常用于4 字节对齐
+	if(pPool->totalLen == 0){
+		LOG_ERROR("totalLen is NULL\n");
+		return ERROR;
+	}
+	MUTEX_ID* pMutex = &pPool->mDevPool;
+	SysMutex_lock(pMutex,WAIT_FOREVER);
+	u32W = pPool->wIdx;	//读写指针获得锁之后再赋值，避免不同线程的读写指针可能相同
+	if(iDrop)
+	{
+		u32R = pPool->wIdx;
+	}else{
+		u32R = pPool->rIdx;
+	}
+	u32TotalLen = mpParam->aDecPool[uChan].totalLen;
+	ptr = (PUINT8)mpParam->aDecPool[uChan].addr[0];
+	u32SpareLen = (u32R + u32TotalLen - u32W - 1) % u32TotalLen;
+	
+	if(uLength > u32SpareLen)
+	{
+		LOG_INFO("Lost one frame to dec pool,len=%d,spareLen=%d rIdx=%d  wIdx=%d \n",uLength,u32SpareLen,u32R,u32W);
+		SysMutex_unlock(pMutex);
+		return OK;
+	}
+	u32Part1 = u32TotalLen - u32W;
+	if(uLength > u32Part1)
+	{
+		
+		SysMemory_copy((void *)(ptr + u32W),(void *)pStreamSrc, u32Part1);
+		u32Part2 = uLength - u32Part1;
+		SysMemory_copy((void *)ptr,(void *)(pStreamSrc+u32Part1), u32Part2);
+	}
+	else
+	{
+		SysMemory_copy((void *)(ptr+u32W),(void *)pStreamSrc,uLength);
+	}	
+	pPool->wIdx = (pPool->wIdx + uLength) % (UINT)u32TotalLen;
+	SysMutex_unlock(pMutex);
+	return OK;
+}
 
-
-
-INT32  MediaStream::SendStreamToRawPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength)
+INT32  MediaStream::SendStreamToEncPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength,INT32 iDrop)
 {
 	UINT32 u32W = 0;
 	UINT32 u32R = 0;
@@ -217,22 +168,38 @@ INT32  MediaStream::SendStreamToRawPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uL
 	UINT32 u32Part2;
 	UINT32 u32TotalLen;
 	PUINT8 ptr = NULL;
-    
+    ENC_SHARE_BUF_T* pPool = &(mpParam->aEncPool[uChan]);
 	if(pStreamSrc == NULL)
 	{
 		LOG_ERROR("pStreamSrc is NULL\n");
 		return ERROR;
 	}
-	uLength = (uLength + 3) & ~3; // 将 uLength 向上舍入到最小的、不小于它的 4 的倍数，常用于4 字节对齐
-	MutexLockGuard mutexLockGuard(mpSendStreamToRawPoolMutex);
-	u32W = mpParam->aRawStreamPool[uChan].wIdx;	//读写指针获得锁之后再赋值，避免不同线程的读写指针可能相同
-	u32R = mpParam->aRawStreamPool[uChan].rIdx;
-	u32TotalLen = mpParam->aRawStreamPool[uChan].u32len;
-	ptr = (PUINT8)mpParam->aRawStreamPool[uChan].addr[0];
+	if((void *)pPool->addr[0] == NULL)
+	{
+		LOG_ERROR("addr is NULL\n");
+		return ERROR;
+	}
+	if(pPool->totalLen == 0){
+		LOG_ERROR("totalLen is NULL\n");
+		return ERROR;
+	}
+	MUTEX_ID* pMutex = &pPool->mEncPool;
+	SysMutex_lock(pMutex,WAIT_FOREVER);
+	u32W = pPool->wIdx; //读写指针获得锁之后再赋值，避免不同线程的读写指针可能相同
+	if(iDrop)
+	{
+			u32R = pPool->wIdx;
+	}else{
+			u32R = pPool->rIdx;
+	}
+
+	u32TotalLen = mpParam->aEncPool[uChan].totalLen;
+	ptr = (PUINT8)mpParam->aEncPool[uChan].addr[0];
 	u32SpareLen = (u32R + u32TotalLen - u32W - 1) % u32TotalLen;	
 	if(uLength > u32SpareLen)
 	{
-		LOG_ERROR("Lost one frame to raw pool,len=%d,spareLen=%d\n",uLength,u32SpareLen);
+		LOG_INFO("Lost one frame to enc pool,len=%d,spareLen=%d rIdx=%d  wIdx=%d \n",uLength,u32SpareLen,u32R,u32W);
+		SysMutex_unlock(pMutex);
 		return OK;
 	}
 	u32Part1 = u32TotalLen - u32W;
@@ -246,11 +213,10 @@ INT32  MediaStream::SendStreamToRawPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uL
 	{
 		SysMemory_copy((void *)(ptr+u32W),(void *)pStreamSrc,uLength);
 	}	
-	mpParam->aRawStreamPool[uChan].wIdx = (mpParam->aRawStreamPool[uChan].wIdx + uLength) % (UINT)u32TotalLen;
+	pPool->wIdx = (pPool->wIdx + uLength) % (UINT)u32TotalLen;
+	SysMutex_unlock(pMutex);
 	return OK;
 }
-
-
 
 INT32  MediaStream::SendStreamToRecPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength, BOOL bVideo, BOOL dropMode)
 {
@@ -278,7 +244,7 @@ INT32  MediaStream::SendStreamToRecPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uL
     }
     
 	uLength = (uLength + 3) & ~3;//4字节对齐
-    MutexLockGuard mutexLockGuard(mpSendStreamToRecPoolMutex);
+    //MutexLockGuard mutexLockGuard(mpSendStreamToRecPoolMutex);
     if (pRecPool->totalLen)
     {
         u32W = pRecPool->wIdx;

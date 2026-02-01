@@ -76,6 +76,6 @@ static void onSDEvent(bool insert)
 
 void SYS_Storage_Init(Notification* account){
     account->SetEventCallback(onEvent);
-    account->Subscribe("SysStorage");
+    //account->Subscribe("SysStorage");
     //HAL::SD_SetEventCallback(onSDEvent);
 }

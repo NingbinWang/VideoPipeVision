@@ -34,13 +34,13 @@ private:
     void AttachEvent(lv_obj_t* obj);
     static void onTimerUpdate(lv_timer_t* timer);
     static void onEvent(lv_event_t* event);
+	unsigned int GetStream(unsigned int uChan,void *pUserData);
 
 private:
     VideoStreamView View;
     VideoStreamModel Model;
     lv_timer_t* timer;
 	char *mFramebuf=nullptr;
-    char *mOutputbuf=nullptr;
 };
 
 }

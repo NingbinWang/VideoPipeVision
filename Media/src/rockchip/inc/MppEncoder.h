@@ -81,9 +81,6 @@ typedef struct
     RK_U32 user_data_enable; //添加用户自定义数据
     RK_U32 roi_enable;
 
-
-
-
     RK_S32 qp_max_step; /* delta qp between each two P frame */
     RK_S32 qp_delta_ip; /* delta qp between I and P */
     RK_S32 qp_delta_vi; /* delta qp between vi and P */

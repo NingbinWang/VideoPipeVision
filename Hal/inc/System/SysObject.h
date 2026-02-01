@@ -14,6 +14,12 @@
 #include <sys/ipc.h>
 #include <mqueue.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+
 #define OBJECT_NAME_MAX 32
 
 typedef enum
@@ -63,6 +69,16 @@ typedef struct {
     void  *arg[10]; /* arguments */ 
 } SysThread_t;
 
+typedef struct {
+    SYSOBJECT_T object;
+    sem_t  sem;
+    bool   named;
+    sem_t* sem_named;
+    key_t  key;
+    INT32  semid;
+    bool   ipc;
+    UINT32 uInitCnt;
+} SysSemaphore_t;
 
 typedef struct {
     SYSOBJECT_T object;
@@ -127,6 +143,10 @@ INT32 SysObject_number (SYSOBJECT_CLASS_TYPE_E type);
          _object = list_next_entry(_object, node)) \
 
 #endif
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* __OBJECT_H__ */
 

@@ -5,38 +5,31 @@
 extern "C" {
 #endif/*__cplusplus*/
 
-#define MAX_NALU_NUM                    (16)
-typedef struct
-{
-    UINT32 	            nalu_type;		   /*5: IDR，6: SEI，7: SPS，8: PPS，9: AUD*/
-    UINT32   	        nalu_len;          /* nalu的长度*/
-    UINT8 	            *nalu_ptr;         /* nalu的起始地址*/
-}NALU_T;
 
 typedef enum
 {
     /********RAW********/
     MEDIA_FORMAT_RAW8 = 0,
-    MEDIA_FORMAT_RAW10,
-    MEDIA_FORMAT_RAW12,
-    MEDIA_FORMAT_RAW14,
-    MEDIA_FORMAT_RAW16,
+    MEDIA_FORMAT_RAW10 = 1,
+    MEDIA_FORMAT_RAW12 = 2,
+    MEDIA_FORMAT_RAW14 = 3,
+    MEDIA_FORMAT_RAW16 = 4,
     /********RGB********/
     MEDIA_FORMAT_RGB565 = 10,           // 16-bit RGB            
-    MEDIA_FORMAT_BGR565,           // 16-bit RGB            
-    MEDIA_FORMAT_RGB555,           // 15-bit RGB             
-    MEDIA_FORMAT_BGR555,           // 15-bit RGB            
-    MEDIA_FORMAT_RGB444,           // 12-bit RGB               
-    MEDIA_FORMAT_BGR444,           // 12-bit RGB              
-    MEDIA_FORMAT_RGB888,           // 24-bit RGB             
-    MEDIA_FORMAT_BGR888,           // 24-bit RGB               
-    MEDIA_FORMAT_RGB101010,        // 30-bit RGB              
-    MEDIA_FORMAT_BGR101010,        // 30-bit RGB               
-    MEDIA_FORMAT_ARGB8888,         // 32-bit RGB               
-    MEDIA_FORMAT_ABGR8888,         // 32-bit RGB              
-    MEDIA_FORMAT_BGRA8888,         // 32-bit RGB               
-    MEDIA_FORMAT_RGBA8888,         // 32-bit RGB               
-    MEDIA_FORMAT_RGB_BUTT,
+    MEDIA_FORMAT_BGR565 = 11,           // 16-bit RGB            
+    MEDIA_FORMAT_RGB555 = 12,           // 15-bit RGB             
+    MEDIA_FORMAT_BGR555 = 13,           // 15-bit RGB            
+    MEDIA_FORMAT_RGB444 = 14,           // 12-bit RGB               
+    MEDIA_FORMAT_BGR444 = 15,           // 12-bit RGB              
+    MEDIA_FORMAT_RGB888 = 16,           // 24-bit RGB             
+    MEDIA_FORMAT_BGR888 = 17,           // 24-bit RGB               
+    MEDIA_FORMAT_RGB101010 = 18,        // 30-bit RGB              
+    MEDIA_FORMAT_BGR101010 = 19,        // 30-bit RGB               
+    MEDIA_FORMAT_ARGB8888 = 20,         // 32-bit RGB               
+    MEDIA_FORMAT_ABGR8888 = 21,         // 32-bit RGB              
+    MEDIA_FORMAT_BGRA8888 = 22,         // 32-bit RGB               
+    MEDIA_FORMAT_RGBA8888 = 23,         // 32-bit RGB               
+    MEDIA_FORMAT_RGB_BUTT = 24,
     /********YUV********/
     MEDIA_FORMAT_YUV420SP = 30,    //YYYY... UV... (NV12)
     MEDIA_FORMAT_YUV420SP_10BIT,           
@@ -63,46 +56,66 @@ typedef enum
     MEDIA_FORMAT_MAX,
 }MEDIA_FORMAT_TYPE_E;
 
-
-
 typedef struct
 {
    void*    pVirAddr;    //虚拟地址
-   void*     pPhyAddr;    //物理地址
-    UINT32     u32Stride;  //stride[0]Y分量 lineoffset stride[1]UV分量   lineoffset
-}MEDIA_YUV_FRAME_T;
+   void*    pPhyAddr;    //物理地址
+   size_t   sSize;       //一帧的大小
+   INT32    iFd;
+}MEDIA_IMAGE_FRAME_T;
 
 //帧头信息
 typedef struct
 {
+	UINT                   uChan;
     UINT32                 u32ImageWidth;         //图像宽度
     UINT32                 u32ImageHeight;         //图像高度
-    INT32                  iframeNum;             //帧号
-    UINT                   uIndex;             //V4L2的buf号
-    size_t                 sSize;             //一帧的大小
+    INT32                  iWidthStride;
+    INT32                  iHeightStride;
+    INT32                  iframeNum;                 //帧号
+    UINT                   uIndex;                    //V4L2的buf号
     MEDIA_FORMAT_TYPE_E    eFormatType;               //YUV格式
-    void*            privt[2];
+    void*                  privt[2];
 }MEDIA_VIDEO_HEADER_T;
 
-//视频输入帧
+//视频帧
 typedef struct
 {
      MEDIA_VIDEO_HEADER_T   stVideoHeader;    //帧头信息
-     MEDIA_YUV_FRAME_T      stYuvframe;       //YUV数据指针
+     MEDIA_IMAGE_FRAME_T    stImageFrame;       //视频数据指针
 }MEDIA_VIDEO_FRAME_T;
+
+
+
+#define MAX_NALU_NUM                    (16)
+
+typedef enum
+{
+	MEDIA_NAL_UNKONW = 0,
+	MEDIA_NAL_SLICE= 1,
+	MEDIA_NAL_SLICE_DPA= 2,
+	MEDIA_NAL_SLICE_DPB= 3,
+	MEDIA_NAL_SLICE_DPC= 4,
+	MEDIA_NAL_SLICE_IDR = 5,
+	MEDIA_NAL_SLICE_SEI = 6,
+	MEDIA_NAL_SPS = 7,
+	MEDIA_NAL_PSS = 8,
+}MEDIA_NALTYPE_E;
+
+// NALU Header 结构体（位域）
+typedef struct {
+    UINT8 uForbiddenZeroBit : 1;   // 必须为 0
+    UINT8 uNalRefIdc : 2;          // 优先级，0 表示不重要，3 表示最重要
+    UINT8 uNalUnitType : 5;        // NALU 类型 (1～12)
+} NALHEADER_T;
+
 
 typedef struct
 {
-  int width;
-  int height;
-  int width_stride;
-  int height_stride;
-  int format;
-  char *virt_addr;
-  int fd;
-} IMAGE_FRAME_T;
-
-
+    UINT32 	            u32NaluType;		   /*5: IDR，6: SEI，7: SPS，8: PPS，9: AUD*/
+    UINT32   	        u32NaluLen;          /* nalu的长度*/
+    VOID* 	            *pNaluPtr;         /* nalu的起始地址*/
+}NALU_T;
 
 typedef enum
 {
@@ -140,34 +153,34 @@ typedef enum
 
 typedef struct 
 {
-    UINT32    videoStreamType;/* 编码类型 */
-    UINT32    width;          /* 宽 */
-    UINT32    height;         /* 高 */
-    UINT32    fps;            /* 帧率 */
-    UINT32    bps;            /* 码率 */
-    UINT32    IFrameInterval; /* I帧间隔 */
-    BOOL      bFristFrm;      /* 标记开启编码后的第一帧 */
-	UINT8	  res[4];
+    MEDIA_STREAM_TYPE_E    	    eType;  /* 编码类型 */
+    UINT32                      u32width;          /* 宽 */
+    UINT32                      u32height;         /* 高 */
+    UINT32                      fps;            /* 帧率 */
+    UINT32                      bps;            /* 码率 */
+    UINT32                      IFrameInterval; /* I帧间隔 */
+    BOOL                        bFristFrm;      /* 标记开启编码后的第一帧 */
+	UINT8	                    res[4];
 }MEDIA_VIDEO_INFO_T;
 
 typedef struct
 {
-    UINT32    audioStreamType;/* 编码类型 */
-    UINT32    frame_len;      /* 帧长 */
-    UINT32    sample_rate;    /* 采样率 */
-    UINT32    bit_rate;       /* 比特率 */
-    UINT32    audio_num;      /* 通道数 */
-	UINT8	  res[4];
+    MEDIA_STREAM_TYPE_E       eType;/* 编码类型 */
+    UINT32                    u32FrameLen;      /* 帧长 */
+    UINT32                    u32SampleRate;    /* 采样率 */
+    UINT32                    u32BitRate;       /* 比特率 */
+    UINT32                    u32AudioNum;      /* 通道数 */
+	UINT8	                  res[4];
 }MEDIA_AUDIO_INFO_T;
 
 /* 每个码流的附加信息 */
 typedef struct
 {
     UINT32     		u32Magic;           /* 常数，供定位 */
-    UINT8    		u8Id;              /* 数据信息类型 */
-    UINT8    		u8Chan;            /* 通道号 */
-    UINT16   		reserve;         /* 填充预留，保持4字节对其*/
-    MEDIA_STREAM_TYPE_E     eType;            /* 码流类型 I/P/A帧*/
+    UINT8    		u8Id;               /* 数据信息类型 */
+    UINT8    		u8Chan;             /* 通道号 */
+    UINT16   		reserve;            /* 填充预留，保持4字节对其*/
+    MEDIA_STREAM_TYPE_E     eType;      /* 码流类型 I/P/A帧*/
 	UINT8	 		res[4];
     DATE_TIME_T     stAbsTime;         /* 绝对时间 */
     UINT32     		u32TimeStamp;       /* 时间戳 1K时标 */
@@ -176,9 +189,9 @@ typedef struct
     UINT32          u32JpgId;             /* JPEG抓拍uId */
     MEDIA_AUDIO_INFO_T      stVideoInfo;
     MEDIA_VIDEO_INFO_T      stAudioInfo;
-}MEDIA_STREAM_ELEMENT;
+}MEDIA_ELEMENTARY_STREAM_T;
 
-
+//elementary stream 分为视频编码层VCL和网络适配层NAL
 
 #ifdef __cplusplus
 }

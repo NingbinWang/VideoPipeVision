@@ -5,7 +5,6 @@
 #include "Logger.h"
 #include "Common.h"
 #include "Mutex.h"
-
 typedef enum
 {
     PACK_JPEG_IMG  = 0,       /*原始图*/
@@ -84,27 +83,21 @@ typedef struct
 	UINT		    videoFrameNum;
 	UINT            packType;         /*0:PS 1:ES*/
 	BOOL            dropMode;         /*0:丢弃 1:覆盖*/
-	UINT            res[1];           /* 预留，兼容64位平台*/    
-    NET_PACK_PARAM  netPackParam;
-    NET_PACK_PARAM  psNetPackParam;
-	videoStreamPack_CALLBACK_f  videoStreamPack;
-	audioStreamPack_CALLBACK_f  audioStreamPack;
+	UINT            res[1];           /* 预留，兼容64位平台*/ 
 }MEDIA_STREAM_PACK_CTRL_T;
 
 typedef struct
 {
-    UINT        naluNum;                       /* 当前nalu个数 */
-    ENC_NALU    nalu[MAX_NALU_NUM];            /* nalu长度 */
-    PUINT8      out_buf;                       /* 码流输出地址 */
-    UINT        out_buf_length;                /* 码流输出地址缓存总长度 */
-    UINT        out_length;                    /* 码流输出有效长度 */
-    UINT        picture_mode;                  /* 帧类型 */
-    UINT        timeStamp;
-    UINT        frameNum;
-    DATE_TIME   now;                           /* 系统时间 */
-	UINT8       encrypt_round[MAX_NALU_NUM];
-	UINT8       nalutype[MAX_NALU_NUM];
-} MEDIA_STREAM_PACK_PATAM_T;
+    UINT        					uNaluNum;                       /* 当前nalu个数 */
+    NALU_T      					astNalu[MAX_NALU_NUM];            /* nalu长度 */
+    void*       					pOut_buf;                       /* 码流输出地址 */
+    UINT        					uOut_buf_length;                /* 码流输出地址缓存总长度 */
+    UINT        					uOut_length;                    /* 码流输出有效长度 */
+    MEDIA_ENC_FRAME_TYPE_E          eFrameType;                  /* 帧类型 */
+    UINT        					uTimeStamp;
+    UINT        					uFrameNum;
+    DATE_TIME_T   					stNow;      /* 系统时间 */
+} MEDIA_STREAM_PACK_PARAM_T;
 
 
 
@@ -113,16 +106,16 @@ class MediaStream
 
     /* data */
 public:
-    static MediaStream* createNew(MEDIA_PARAM_T* pParam);
+    static MediaStream* createNew(MEDIA_PARAM_T& pParam);
     MediaStream(MEDIA_PARAM_T* pParam);
     ~MediaStream();
-    INT32  SendStreamToRawPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength);
-	INT32  SendStreamToRecPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength, BOOL bVideo, BOOL dropMode);
-   
+    INT32  StreamPack(MEDIA_ENC_FRAME_T* pFrame);
+    INT32  StreamFrameConvert(MEDIA_VIDEO_FRAME_T* pFrameInfo,UINT uVoChan);
+    INT32  SendStreamToDecPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength,INT32 iDrop);
+    INT32  SendStreamToEncPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength,INT32 iDrop);
 private:
+	INT32  SendStreamToRecPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength, BOOL bVideo, BOOL dropMode);
 	MEDIA_PARAM_T* mpParam;
-	Mutex* mpSendStreamToRawPoolMutex;
-	Mutex* mpSendStreamToRecPoolMutex;
 };
 
 

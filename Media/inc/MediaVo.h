@@ -2,6 +2,7 @@
 #define _MEDIA_VO_H_
 #include "Common.h"
 #include "MediaConfig.h"
+#include "MediaFrame.h"
 #ifdef __cplusplus
 extern "C" {
 #endif/*__cplusplus*/
@@ -16,8 +17,13 @@ extern "C" {
 
 typedef struct
 {
-    UINT32                  bHaveVo;
-    UINT32                  res[62];
+	UINT                              uChan; //Vo的通道
+	UINT                              uDecChan;//使用解码pool的通道
+	UINT32                            u32ImageWidth;//Vo的输出大小
+	UINT32                            u32ImageHeight;
+	UINT32                            u32FrameSize;
+	MEDIA_FORMAT_TYPE_E				  eType;
+    UINT32                            res[62];
     /**< 预留*/
 }VO_CFG_PARAM_T;
 

@@ -2,7 +2,7 @@
 #define _MEDIA_DEC_H_
 #include "MediaConfig.h"
 #include "MediaFrame.h"
-
+#include "SysMutex.h"
 #ifdef __cplusplus
 extern "C" {
 #endif/*__cplusplus*/
@@ -36,11 +36,12 @@ typedef struct
 /*解码码流共享缓存接口定义*/
 typedef struct 
 {
-    void *                addr[MAX_SHARE_ADDR];   /*多核/多进程访问地址 */
-    volatile UINT32         totalLen;       		/*解码缓冲长度*/
-    volatile UINT32         wIdx;           		/*解码缓冲写索引*/
-    volatile UINT32         rIdx;           		/*解码缓冲读索引*/
-	UINT8					res[4];
+	MUTEX_ID                 mDevPool;
+    void *                	 addr[MAX_SHARE_ADDR];   /*多核/多进程访问地址 */
+    UINT32                   totalLen;       		/*解码缓冲长度*/
+    UINT32                   wIdx;           		/*解码缓冲写索引*/
+    UINT32                   rIdx;           		/*解码缓冲读索引*/
+	UINT8		             res[4];
 }DEC_SHARE_BUF_T;
 
 
@@ -48,7 +49,5 @@ typedef struct
 }
 #endif/*__cplusplus*/
 
-int MediaDecReSize(IMAGE_FRAME_T* srcimg,IMAGE_FRAME_T *outimg);
 
-int MediaDecConvertBGRA8888(IMAGE_FRAME_T* srcimg,IMAGE_FRAME_T *outimg);
 #endif

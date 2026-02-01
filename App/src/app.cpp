@@ -17,7 +17,7 @@
 #include "H264RtpSink.h"
 #include "Common.h"
 #include "autoconf.h"
-#include "Media/MediaVISource.h"
+#include "VideoMediaSource.h"
 #include <sys/resource.h>
 #include "SysFile.h"
 #include <fcntl.h>      // 定义 O_RDWR, O_CREAT 等标志
@@ -31,18 +31,30 @@
 #include "AiModel.h"
 #endif
 #include "MediaManager.h"
+#include <pthread.h>
+
+UsageEnvironment* env = NULL;
+
+void* AppRtspServerFun(void* UserData)
+{
+	/*Handle LVGL tasks*/
+	  while(1) {
+		  env->scheduler()->loop();
+		  usleep(5000);
+	  }
+}
 
 INT32 AppRtspServer(const char* strIp)
 {
     EventScheduler* scheduler = EventScheduler::createNew(EventScheduler::POLLER_SELECT);//创建调度器
     ThreadPool* threadPool = ThreadPool::createNew(2);//创建线程池
-    UsageEnvironment* env = UsageEnvironment::createNew(scheduler, threadPool);//创建环境变量
+    env = UsageEnvironment::createNew(scheduler, threadPool);//创建环境变量
 
     Ipv4Address ipAddr(strIp, 5001);//创建IP
     RtspServer* server = RtspServer::createNew(env, ipAddr);//创建对应的RTSPServer
     MediaSession* session = MediaSession::createNew("live");//创建一个session
-    MediaSource* videoSource = MediaVISource::createNew(env, MAINDEVNAME); 
-    RtpSink* rtpSink = H264RtpSink::createNew(env, videoSource);
+    MediaSource* mediaSource = VideoMediaSource::createNew(env); 
+    RtpSink* rtpSink = H264RtpSink::createNew(env, mediaSource);
 	//MediaSource* audioSource = AlsaMediaSource::createNew(env);
     //RtpSink* audioRtpSink = AACRtpSink::createNew(env, audioSource);
     
@@ -50,8 +62,9 @@ INT32 AppRtspServer(const char* strIp)
    // session->addRtpSink(MediaSession::TrackId1, audioRtpSink);
     server->addMeidaSession(session);
     server->start();
+	
     std::cout<<"Play the media using the URL \""<<server->getUrl(session)<<"\""<<std::endl;
-    env->scheduler()->loop();
+    //env->scheduler()->loop();
     return 0;
 }
 
@@ -76,7 +89,7 @@ static int sys_core_dump_open(char *pCorePid, char *pCorePath)
         /* 1, set core ulimit */
      	if (getrlimit(RLIMIT_CORE, &limit))
         {
-            printf("get resource limit fail!\n");
+            LOG_ERROR("get resource limit fail!\n");
      		break;
      	}
      	limit_set.rlim_cur = limit_set.rlim_max = RLIM_INFINITY;
@@ -85,12 +98,12 @@ static int sys_core_dump_open(char *pCorePid, char *pCorePath)
 			limit_set.rlim_cur = limit_set.rlim_max = limit.rlim_max;
 			if (limit.rlim_max != RLIM_INFINITY)
 			{
-				printf("CORE: cur=0x%x, max=0x%x\n",
+				LOG_ERROR("CORE: cur=0x%x, max=0x%x\n",
 				(UINT)limit.rlim_cur, (UINT)limit.rlim_max);
 			}
 			if (setrlimit(RLIMIT_CORE, &limit_set))
 			{
-				printf("set core ulimited fail!\n");
+				LOG_ERROR("set core ulimited fail!\n");
 				break;
 			}
      	}
@@ -100,12 +113,12 @@ static int sys_core_dump_open(char *pCorePid, char *pCorePath)
             iFd1 = open("/proc/sys/kernel/core_uses_pid", O_RDWR|O_NDELAY|O_TRUNC);
             if (iFd1 < 0)
             {
-                printf("open core_uses_pid fail! 0x%x\n", iFd1);
+                LOG_ERROR("open core_uses_pid fail! 0x%x\n", iFd1);
                 break;
             }
             if (strlen(pCorePid) != (unsigned int)write(iFd1, pCorePid, strlen(pCorePid)))
             {
-                printf("set core_uses_pid fail!\n");
+                LOG_ERROR("set core_uses_pid fail!\n");
                 break;
             }
         }
@@ -116,19 +129,18 @@ static int sys_core_dump_open(char *pCorePid, char *pCorePath)
             iFd2 = open("/proc/sys/kernel/core_pattern", O_RDWR|O_NDELAY|O_TRUNC);
             if (iFd2 < 0)
             {
-                printf("open core_pattern fail! %d\n", iFd1);
+                LOG_ERROR("open core_pattern fail! %d\n", iFd1);
                 break;
             }
             if (strlen(pCorePath) != (unsigned int)write(iFd2, pCorePath, strlen(pCorePath)))
             {
-                printf("set core_pattern fail!\n");
+                LOG_ERROR("set core_pattern fail!\n");
                 break;
             }
         }
 
         /* 4, set core dump open succ */
         iRet = OK;
-        printf("set core dump open succ!\n");
     }while(0);
 
     /* source free */
@@ -154,11 +166,11 @@ static void set_core_dump_enable(void)
 
 	if (OK != sys_core_dump_open(szCorePid, szCorePath))
 	{
-		printf("========= gdb core dump open fail! =========\n\n");
+		LOG_ERROR("========= gdb core dump open fail! =========\n\n");
 	}
 	else
 	{
-		printf("sys gdb core open succ ~~~ \n");
+		LOG_INFO("sys gdb core open succ ~~~ \n");
 	}
 }
 
@@ -168,19 +180,22 @@ int app_main(void)
 {
   
    //Logger::setLogFile("xxx.log");
-   Logger::setLogLevel(Logger::LogDebug);
+   pthread_t id;
+   Logger::setLogLevel(Logger::LogInfo);
    MediaManagerInit();
 #ifdef USE_AI
    //AiModelInit();
 #endif
 #ifdef USE_LVGL
-   //LvThreadInit();
+   LvThreadInit();
 #endif
 	set_core_dump_enable();
-	//AppRtspServer("192.168.1.21");
+	SysTime_sleep_ms(500);
+	AppRtspServer("192.168.0.14");
+	pthread_create(&id,NULL,AppRtspServerFun,NULL);
 	while(1)
 	{
-	  SysTime_sleep_ms(1000);
+	  SysTime_sleep_ms(100);
 	}
    return 0;
 }

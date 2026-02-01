@@ -12,7 +12,7 @@
 
 static int createEventFd()
 {
-    int evtFd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+    int evtFd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (evtFd < 0)
     {
         LOG_ERROR("failed to create event fd\n");
@@ -71,7 +71,7 @@ EventScheduler::EventScheduler(PollerType type, int fd) :
 EventScheduler::~EventScheduler()
 {
     mPoller->removeIOEvent(mWakeIOEvent);
-    ::close(mWakeupFd);
+    close(mWakeupFd);
     
     Delete::release(mWakeIOEvent);
     Delete::release(mTimerManager);
@@ -132,8 +132,11 @@ void EventScheduler::loop()
     while(mQuit != true)
     {
         this->handleTriggerEvents();
+		LOG_INFO("LOOP 1 \n");
         mPoller->handleEvent();
+		LOG_INFO("LOOP 2 \n");
         this->handleOtherEvent();
+		LOG_INFO("LOOP 3 \n");
     }
 }
 
@@ -141,11 +144,12 @@ void EventScheduler::wakeup()
 {
     uint64_t one = 1;
     int ret;
-    ret = ::write(mWakeupFd, &one, sizeof(one));
+    ret = write(mWakeupFd, &one, sizeof(one));
 }
 
 void EventScheduler::handleTriggerEvents()
 {
+	LOG_INFO("handleTriggerEvents\n");
     if(!mTriggerEvents.empty())
     {
         for(std::vector<TriggerEvent*>::iterator it = mTriggerEvents.begin();

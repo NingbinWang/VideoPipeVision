@@ -2,6 +2,6 @@
 #define _LVTHREAD_H_
 
 int LvThreadInit(void);
-void LvThreadProcess(void* UserData);
+void* LvThreadProcess(void* UserData);
 
 #endif

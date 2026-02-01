@@ -11,6 +11,8 @@
 #include "Common.h"
 #include <unistd.h>
 #include "PagesNotify.h"
+#include "SysPthread.h"
+#include <pthread.h>
 
 static void ShowLvglVersion(void)
 {
@@ -27,7 +29,7 @@ static int LvLinuxPorting(void)
    return 0;
 }
 
-void LvThreadProcess(void* UserData)
+void* LvThreadProcess(void* UserData)
 {
 	/*Handle LVGL tasks*/
 	  while(1) {
@@ -41,6 +43,7 @@ int LvThreadInit(void)
 {
 	static Factory factory;
     static PageManager manager(&factory);
+	pthread_t id;
 	LvLinuxPorting();
 	PagesNotify_Init();
     Resource.Init();
@@ -51,5 +54,5 @@ int LvThreadInit(void)
 	manager.Install("VideoStream", "Pages/VideoStream");
     manager.SetGlobalLoadAnimType(PageManager::LOAD_ANIM_OVER_TOP, 500);
     manager.Push("Pages/Startup");
-    
+    pthread_create(&id,NULL,LvThreadProcess,NULL);
 }

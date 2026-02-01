@@ -59,7 +59,7 @@ extern "C" {
 /*解码通道个数*/
 #define MAX_DEC_CHAN_SOC  0
 /*显示通道个数*/
-#define MAX_VO_CHAN_SOC   0
+#define MAX_VO_CHAN_SOC   1
 /*USB摄像头通道个数*/
 #define MAX_USB_CHAN_SOC  0
 
