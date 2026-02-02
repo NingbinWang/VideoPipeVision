@@ -7,6 +7,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif/*__cplusplus*/
+
+
+#define AUDIO_DEVNAME_STR_LEN (16)
+
 //缓冲区的大小
 typedef struct
 {
@@ -18,12 +22,30 @@ typedef struct
 
 typedef enum 
 {
+	AUCODEC_ACC,
 	AUCODEC_MAX,
 } AUDIO_CODEC_TYPE_E;
 
 typedef struct
 {
-    AUDIO_CODEC_TYPE_E aCodecType;
+	AUDIO_CODEC_TYPE_E eType;
+	UINT               uBitRate;
+	UINT               uTransMux;
+	UINT               uAOT;
+}AUDIO_CODEC_PARAM_T;
+
+
+
+typedef struct
+{
+	UINT    uChan;
+	CHAR    strDevname[AUDIO_DEVNAME_STR_LEN];    //设备节点名
+	UINT    uPcmChannel;
+	UINT    uPcmSampleRate;
+	UINT    uPcmAccess;
+	UINT    uPcmFormat;
+	UINT    uPcmFrameSize;
+    AUDIO_CODEC_PARAM_T stCodecParam;
     /*audio codec type*/
     UINT32 res[3];
     /**< 预留*/

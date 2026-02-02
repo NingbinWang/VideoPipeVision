@@ -8,6 +8,8 @@
 //AI
 #define LABEL_NALE_TXT_PATH "/home/cat/coco_80_labels_list.txt"
 #define MODEL_PATH "/home/cat/yolov5s-640-640.rknn"
+//audio
+#define AUDIODEVNAME   "default"
 
 //主子码流节点名
 #define MAINDEVNAME   "/dev/video0"

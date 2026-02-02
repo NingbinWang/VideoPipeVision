@@ -66,6 +66,20 @@ int MediaManagerInit()
 	pManagerParm->astVoCfgParam[0].u32ImageWidth = 720;
 	pManagerParm->astVoCfgParam[0].u32FrameSize = 1080*720*4;//一帧的数据是 高*宽*位宽
 	//音频
+	pManagerParm->stAudioCfgParam.uChan = 0;
+	pManagerParm->stAudioCfgParam.uPcmChannel = 2;
+	pManagerParm->stAudioCfgParam.uPcmSampleRate = 48000;
+	pManagerParm->stAudioCfgParam.uPcmAccess = 0;//SND_PCM_STREAM_PLAYBACK 0  SND_PCM_STREAM_CAPTURE 1
+	pManagerParm->stAudioCfgParam.uPcmFormat = 2;//SND_PCM_FORMAT_S16_LE 2
+	pManagerParm->stAudioCfgParam.uPcmFrameSize = 1024;
+	pManagerParm->stAudioCfgParam.stCodecParam.eType = AUCODEC_ACC;
+	pManagerParm->stAudioCfgParam.stCodecParam.uBitRate = 128000;
+	pManagerParm->stAudioCfgParam.stCodecParam.uTransMux = 0;
+	pManagerParm->stAudioCfgParam.stCodecParam.uAOT = 2;
+
+	
+	strcpy(pManagerParm->stAudioCfgParam.strDevname,AUDIODEVNAME);
+	
 	pManagerParm->stAudioStreamPool.u32len = 256*1024;
 	pManagerParm->stAudioStreamPool.rIdx = 0;
 	pManagerParm->stAudioStreamPool.wIdx = 0;
