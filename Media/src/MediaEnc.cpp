@@ -187,7 +187,6 @@ VOID MediaEnc::MediaEncSendStream(MEDIA_ENC_FRAME_T* pFrame)
 	SysMemory_copy((VOID *)pOutputbuf, &stEncFrameInfo,sizeof(MEDIA_VIDEO_FRAME_T));
 	SysMemory_copy((VOID *)(pOutputbuf+sizeof(MEDIA_VIDEO_FRAME_T)),pFrame->stVideoFrame.stImageFrame.pVirAddr,stEncFrameInfo.stImageFrame.sSize);
 	uFrameSize = stEncFrameInfo.stImageFrame.sSize+sizeof(MEDIA_VIDEO_FRAME_T);
-	LOG_INFO("ENC Frame size:%d\n",stEncFrameInfo.stImageFrame.sSize);
 	pInnerParam->pStream->SendStreamToEncPool(0, (PUINT8)pOutputbuf, uFrameSize,0);
 	SysMemory_free(pOutputbuf);
 }

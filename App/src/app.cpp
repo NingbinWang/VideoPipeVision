@@ -40,7 +40,6 @@ void* AppRtspServerFun(void* UserData)
 	/*Handle LVGL tasks*/
 	  while(1) {
 		  env->scheduler()->loop();
-		  usleep(5000);
 	  }
 }
 
@@ -181,7 +180,7 @@ int app_main(void)
   
    //Logger::setLogFile("xxx.log");
    pthread_t id;
-   Logger::setLogLevel(Logger::LogInfo);
+   Logger::setLogLevel(Logger::LogDebug);
    MediaManagerInit();
 #ifdef USE_AI
    //AiModelInit();

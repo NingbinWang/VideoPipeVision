@@ -45,7 +45,8 @@ void RtspServer::handleDisconnection(int sockfd)
 {
     MutexLockGuard mutexLockGuard(mMutex);
     mDisconnectionlist.push_back(sockfd);
-    mEnv->scheduler()->addTriggerEvent(mTriggerEvent);
+    //mEnv->scheduler()->addTriggerEvent(mTriggerEvent);
+    mEnv->scheduler()->removeTriggerEvent(mTriggerEvent);
 }
 
 bool RtspServer::addMeidaSession(MediaSession* mediaSession)

@@ -9,7 +9,7 @@
 #include "Logger.h"
 #include "MediaManager.h"
 #include "SysMemory.h"
-
+#include "SysTime.h"
 VideoMediaSource* VideoMediaSource::createNew(UsageEnvironment* env)
 {
     return New<VideoMediaSource>::allocate(env);
@@ -56,14 +56,18 @@ void VideoMediaSource::readFrame()
    
     if(mNaluQueue.empty())
     {
-		unsigned int framesize = 0;
-		framesize = GetEncStream(0,this->mOutputbuf);
-		if(framesize == 0)
+    	while(1)
 		{
-			 LOG_WARNING("don't have framebuf\n");
-             return;
-		}
-		framebuf = (char *)SysMemory_malloc(framesize);
+			size = GetEncStream(0,this->mOutputbuf);
+			if(size == 0)
+			{
+			 LOG_INFO("don't have one framebuf\n");
+			 SysTime_sleep_ms(33);
+             continue;
+			}
+			break;
+    	}
+		framebuf = (char *)SysMemory_malloc(size);
         memcpy(framebuf, this->mOutputbuf, size);
         memset(this->mOutputbuf,0,size);
         mNaluQueue.push(Nalu((uint8_t*)framebuf, size));

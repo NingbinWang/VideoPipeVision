@@ -20,7 +20,7 @@ RtpSink::RtpSink(UsageEnvironment* env, MediaSource* mediaSource, int payloadTyp
     
 {
     mTimerEvent = TimerEvent::createNew(this);
-    mTimerEvent->setTimeoutCallback(timeoutCallback);
+    mTimerEvent->setTimeoutCallback(this->timeoutCallback);
 
     mSSRC = rand();
 }
@@ -65,9 +65,7 @@ void RtpSink::timeoutCallback(void* arg)
     {
         return;
     }
-
     rtpSink->handleFrame(frame);
-
     rtpSink->mMediaSource->putFrame(frame);
 }
 

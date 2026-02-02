@@ -25,6 +25,7 @@ public:
     virtual ~EventScheduler();
 
     bool addTriggerEvent(TriggerEvent* event);
+	bool removeTriggerEvent(TriggerEvent* event);
     Timer::TimerId addTimedEventRunAfater(TimerEvent* event, Timer::TimeInterval delay);
     Timer::TimerId addTimedEventRunAt(TimerEvent* event, Timer::Timestamp when);
     Timer::TimerId addTimedEventRunEvery(TimerEvent* event, Timer::TimeInterval interval);

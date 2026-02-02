@@ -44,8 +44,6 @@ void Acceptor::setNewConnectionCallback(NewConnectionCallback cb, void* arg)
 
 void Acceptor::readCallback(void* arg)
 {
-	LOG_DEBUG("readCallback\n");
-
     Acceptor* acceptor = (Acceptor*)arg;
     acceptor->handleRead();
 }

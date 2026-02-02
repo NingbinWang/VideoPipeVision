@@ -36,9 +36,7 @@ AvFrame* MediaSource::getFrame()
 void MediaSource::putFrame(AvFrame* frame)
 {
     MutexLockGuard mutexLockGuard(mMutex);
-
     mAvFrameInputQueue.push(frame);
-    
     mEnv->threadPool()->addTask(mTask);
 }
 

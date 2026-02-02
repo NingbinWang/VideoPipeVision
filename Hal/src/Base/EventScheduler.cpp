@@ -1,7 +1,7 @@
 #include <sys/eventfd.h>
 #include <unistd.h>
 #include <stdint.h>
-
+#include <algorithm> 
 #include "EventScheduler.h"
 #include "Poller/SelectPoller.h"
 #include "Poller/PollPoller.h"
@@ -82,10 +82,29 @@ EventScheduler::~EventScheduler()
 bool EventScheduler::addTriggerEvent(TriggerEvent* event)
 {
     mTriggerEvents.push_back(event);
-
     return true;
 }
 
+
+bool EventScheduler::removeTriggerEvent(TriggerEvent* event)
+{
+	 if (!event) {
+	 	LOG_ERROR("event is null\n");
+        return false;
+    }
+
+    auto& vec = mTriggerEvents;
+    auto oldSize = vec.size();
+
+    // 关键修复：显式使用 std::remove
+    vec.erase(
+        std::remove(vec.begin(), vec.end(), event),
+        vec.end()
+    );
+
+    // 如果 size 变小了，说明确实移除了元素
+    return vec.size() < oldSize;
+}
 Timer::TimerId EventScheduler::addTimedEventRunAfater(TimerEvent* event, Timer::TimeInterval delay)
 {
     Timer::Timestamp when = Timer::getCurTime();
@@ -132,11 +151,8 @@ void EventScheduler::loop()
     while(mQuit != true)
     {
         this->handleTriggerEvents();
-		LOG_INFO("LOOP 1 \n");
         mPoller->handleEvent();
-		LOG_INFO("LOOP 2 \n");
         this->handleOtherEvent();
-		LOG_INFO("LOOP 3 \n");
     }
 }
 
@@ -149,7 +165,6 @@ void EventScheduler::wakeup()
 
 void EventScheduler::handleTriggerEvents()
 {
-	LOG_INFO("handleTriggerEvents\n");
     if(!mTriggerEvents.empty())
     {
         for(std::vector<TriggerEvent*>::iterator it = mTriggerEvents.begin();

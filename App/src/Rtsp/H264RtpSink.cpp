@@ -48,14 +48,12 @@ void H264RtpSink::handleFrame(AvFrame* frame)
 {
     RtpHeader* rtpHeader = mRtpPacket.mRtpHeadr;
     uint8_t naluType = frame->mFrame[0];
-
     if(frame->mFrameSize <= RTP_MAX_PKT_SIZE)
     {
         memcpy(rtpHeader->payload, frame->mFrame, frame->mFrameSize);
         mRtpPacket.mSize = frame->mFrameSize;
         sendRtpPacket(&mRtpPacket);
         mSeq++;
-
         if ((naluType & 0x1F) == 7 || (naluType & 0x1F) == 8) // 如果是SPS、PPS就不需要加时间戳
             return;
     }
@@ -64,7 +62,6 @@ void H264RtpSink::handleFrame(AvFrame* frame)
         int pktNum = frame->mFrameSize / RTP_MAX_PKT_SIZE;       // 有几个完整的包
         int remainPktSize = frame->mFrameSize % RTP_MAX_PKT_SIZE; // 剩余不完整包的大小
         int i, pos = 1;
-
         /* 发送完整的包 */
         for (i = 0; i < pktNum; i++)
         {
@@ -98,7 +95,6 @@ void H264RtpSink::handleFrame(AvFrame* frame)
             mSeq++;
             pos += RTP_MAX_PKT_SIZE;
         }
-
         /* 发送剩余的数据 */
         if (remainPktSize > 0)
         {
@@ -113,6 +109,5 @@ void H264RtpSink::handleFrame(AvFrame* frame)
             mSeq++;
         }
     }
-    
     mTimestamp += mClockRate/mFps;
 }

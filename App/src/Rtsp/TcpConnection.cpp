@@ -92,7 +92,7 @@ void TcpConnection::handleRead()
 
     if(ret == 0)
     {
-        LOG_DEBUG("client disconnect\n");
+        LOG_INFO("client disconnect\n");
         handleDisconnection();
         return;
     }
@@ -128,7 +128,6 @@ void TcpConnection::handleError()
 
 void TcpConnection::readCallback(void* arg)
 {
-	LOG_INFO("readCallback\n");
     TcpConnection* tcpConnection = (TcpConnection*)arg;
     tcpConnection->handleRead();
 }
