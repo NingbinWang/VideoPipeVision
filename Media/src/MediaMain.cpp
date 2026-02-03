@@ -114,7 +114,10 @@ INT32 MediaInit(MEDIA_PARAM_T* pParam)
 		pParam->astEncCfgParam[u32Chan].uChan = u32Chan;
 		pInnerParam->apEnc[u32Chan] = MediaEnc::createNew(pParam->astEncCfgParam[u32Chan]);
 	}
+	//stream
 	pInnerParam->pStream = MediaStream::createNew(*pParam);
+	//audio
+	pInnerParam->pAudio = MediaAudio::createNew(pParam->stAudioCfgParam);
 
 	pInnerParam->apEnc[0]->MediaEncStartThread();
 

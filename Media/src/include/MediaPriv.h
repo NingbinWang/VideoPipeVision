@@ -11,6 +11,7 @@
 #include "MppDecoder.h"
 #include "RKrga.h"
 #include "RKnpu.h"
+#include "MediaAudioInner.h"
 
 // Media内部参数
 typedef struct
@@ -20,6 +21,7 @@ typedef struct
 	MediaVi*                apVi[MAX_VI_CHAN_SOC+ MAX_USB_CHAN_SOC];//这里有多少路硬件路就有多少个Vi
 	MediaEnc*               apEnc[MAX_ENC_CHAN_SOC];
 	MediaEncCallback        AICallback;
+	MediaAudio*             pAudio;
 }MEDIA_INNER_PARAM_T;
 
 typedef struct

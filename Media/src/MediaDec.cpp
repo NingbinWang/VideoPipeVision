@@ -1,11 +1,6 @@
 #include "MediaPriv.h"
 #include "MediaDec.h"
 #include "MediaDecInner.h"
-int MediaDecInit(const DEC_STATUS_T* status)
-{
-    return 0;
-}
-
 
 bool MediaDecCvtcoloerVirt(IMAGE_FRAME_T* srcimg,IMAGE_FRAME_T *outimg)
 {

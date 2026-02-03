@@ -5,6 +5,7 @@
 #include "Logger.h"
 #include "SysTime.h"
 #include "SysMutex.h"
+#include <alsa/asoundlib.h>
 
 MEDIA_PARAM_T *pManagerParm = NULL;
 
@@ -68,9 +69,9 @@ int MediaManagerInit()
 	//音频
 	pManagerParm->stAudioCfgParam.uChan = 0;
 	pManagerParm->stAudioCfgParam.uPcmChannel = 2;
-	pManagerParm->stAudioCfgParam.uPcmSampleRate = 48000;
-	pManagerParm->stAudioCfgParam.uPcmAccess = 0;//SND_PCM_STREAM_PLAYBACK 0  SND_PCM_STREAM_CAPTURE 1
-	pManagerParm->stAudioCfgParam.uPcmFormat = 2;//SND_PCM_FORMAT_S16_LE 2
+	pManagerParm->stAudioCfgParam.uPcmSampleRate = 44100;
+	pManagerParm->stAudioCfgParam.uPcmAccess = SND_PCM_ACCESS_RW_INTERLEAVED;//SND_PCM_STREAM_PLAYBACK 0  SND_PCM_STREAM_CAPTURE 1
+	pManagerParm->stAudioCfgParam.uPcmFormat = SND_PCM_FORMAT_S16_LE;//SND_PCM_FORMAT_S16_LE 2
 	pManagerParm->stAudioCfgParam.uPcmFrameSize = 1024;
 	pManagerParm->stAudioCfgParam.stCodecParam.eType = AUCODEC_ACC;
 	pManagerParm->stAudioCfgParam.stCodecParam.uBitRate = 128000;
@@ -79,12 +80,12 @@ int MediaManagerInit()
 
 	
 	strcpy(pManagerParm->stAudioCfgParam.strDevname,AUDIODEVNAME);
-	
-	pManagerParm->stAudioStreamPool.u32len = 256*1024;
-	pManagerParm->stAudioStreamPool.rIdx = 0;
-	pManagerParm->stAudioStreamPool.wIdx = 0;
+	SysMutex_create(&pManagerParm->stAudioPool.mAudPool, 0);
+	pManagerParm->stAudioPool.totalLen = 256*1024;
+	pManagerParm->stAudioPool.rIdx = 0;
+	pManagerParm->stAudioPool.wIdx = 0;
 	//音频的内存池
-	pManagerParm->stAudioStreamPool.addr[0] = SysMemory_malloc(pManagerParm->stAudioStreamPool.u32len);
+	pManagerParm->stAudioPool.addr[0] = SysMemory_malloc(pManagerParm->stAudioPool.totalLen);
     //RecPool池
 	pManagerParm->astRecPool[0].totalLen = 12*1024*1024;
 	pManagerParm->astRecPool[1].totalLen = 4*1024*1024;//不使用

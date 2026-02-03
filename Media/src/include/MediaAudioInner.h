@@ -4,13 +4,13 @@
 #include "Logger.h"
 #include "Common.h"
 #include "MediaAudio.h"
-#include "MediaPriv.h"
 #include <alsa/asoundlib.h>
 #include <fdk-aac/aacenc_lib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "New.h"
+#define AUDIOBUFFERSIZE  8192
 class MediaAudio
 {
 public:
@@ -18,8 +18,10 @@ public:
     MediaAudio(AUDIO_CFG_PARAM_T* pParams);
 	~MediaAudio();
 	INT32 MediaAudioRecordInit(const char* strDevName);
-	INT32 MediaAudioAacEncoder(PUINT8 pAsc,UINT uSize);
-	INT32 MediaAudioSendAccStraem(VOID);
+	INT32 MediaAudioAacEncoder(AACENC_INFO_T* pInfo);
+	INT32 MediaAudioGetAacData(PUINT8 pAacdata);
+	INT32 MediaAudioEncPcmToAac(INT16 *pPcmSamples, UINT uNumSamples, UINT8 *pOutData);
+	INT32 MediaAudioSendStream(MEDIA_AUDIO_INFO_T* pstAudioInfo);
 	
 private:
 	snd_pcm_t *mpPcmhandle;

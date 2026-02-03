@@ -61,9 +61,7 @@ INT32 AppRtspServer(const char* strIp)
    // session->addRtpSink(MediaSession::TrackId1, audioRtpSink);
     server->addMeidaSession(session);
     server->start();
-	
     std::cout<<"Play the media using the URL \""<<server->getUrl(session)<<"\""<<std::endl;
-    //env->scheduler()->loop();
     return 0;
 }
 
@@ -181,10 +179,10 @@ int app_main(void)
    //Logger::setLogFile("xxx.log");
    pthread_t id;
    Logger::setLogLevel(Logger::LogDebug);
-   MediaManagerInit();
 #ifdef USE_AI
    //AiModelInit();
 #endif
+	MediaManagerInit();
 #ifdef USE_LVGL
    LvThreadInit();
 #endif

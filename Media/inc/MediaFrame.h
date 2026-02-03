@@ -56,6 +56,42 @@ typedef enum
     MEDIA_FORMAT_MAX,
 }MEDIA_FORMAT_TYPE_E;
 
+typedef enum 
+{
+	AUCODEC_ACC,
+	AUCODEC_MAX,
+} MEDIA_AUDIO_CODEC_TYPE_E;
+
+typedef enum
+{
+    /* 音视频相关 */
+    STREAM_ELEMENT_VIDEO_I              =0x10,        /*视频I帧*/
+    STREAM_ELEMENT_VIDEO_P              =0x11,        /*视频P帧*/
+    STREAM_ELEMENT_VIDEO_B              =0x12,        /*视频B帧*/
+    STREAM_ELEMENT_AUDIO_F              =0x13,         /*音频帧*/
+
+    /* 抓图相关 */
+    STREAM_ELEMENT_JPEG_IMG             =0x20,       /*抓图数据JPEG*/
+    STREAM_ELEMENT_JPEG_THM             =0x21,       /*抓图数据JPEG 缩略图图片*/
+    STREAM_ELEMENT_JPEG_ADAS            =0x22,       /*智能算法抓图*/
+    STREAM_ELEMENT_JPEG_FR              =0x23,       /*人脸算法抓图*/
+    STREAM_ELEMENT_JPEG_FACE_REG        =0x24,       /*人脸注册*/
+    STREAM_ELEMENT_YUV_IMG              =0x25,       /*抓图数据YUV*/
+	STREAM_ELEMENT_JPEG_PLAYB_IMG		=0x26,		 /*回放抓图*/
+	STREAM_ELEMENT_JPEG_PLAYB_THM		=0x27,		 /*回放抓缩略图*/
+
+    /* 智能算法结果相关 */
+    STREAM_ELEMENT_ADAS_RESULT          =0x30,       /*ADAS检测结果*/
+    STREAM_ELEMENT_VCA_PACKET           =0x31,       /*智能检测结果*/
+
+    /* 智能算法POS相关 */
+    STREAM_ELEMENT_FD_POS               =0x50,       /*人脸检测调试信息*/
+    /* 其他 */
+    STREAM_ELEMENT_HEARTBEAT            =0x71,       /*心跳信息*/
+    STREAM_ELEMENT_MAX  = INT_MAXI,
+}MEDIA_STREAM_TYPE_E;
+
+
 typedef struct
 {
    void*    pVirAddr;    //虚拟地址
@@ -117,34 +153,6 @@ typedef struct
     VOID* 	            *pNaluPtr;         /* nalu的起始地址*/
 }NALU_T;
 
-typedef enum
-{
-    /* 音视频相关 */
-    STREAM_ELEMENT_VIDEO_I              =0x10,        /*视频I帧*/
-    STREAM_ELEMENT_VIDEO_P              =0x11,        /*视频P帧*/
-    STREAM_ELEMENT_VIDEO_B              =0x12,        /*视频B帧*/
-    STREAM_ELEMENT_AUDIO_F              =0x13,         /*音频帧*/
-
-    /* 抓图相关 */
-    STREAM_ELEMENT_JPEG_IMG             =0x20,       /*抓图数据JPEG*/
-    STREAM_ELEMENT_JPEG_THM             =0x21,       /*抓图数据JPEG 缩略图图片*/
-    STREAM_ELEMENT_JPEG_ADAS            =0x22,       /*智能算法抓图*/
-    STREAM_ELEMENT_JPEG_FR              =0x23,       /*人脸算法抓图*/
-    STREAM_ELEMENT_JPEG_FACE_REG        =0x24,       /*人脸注册*/
-    STREAM_ELEMENT_YUV_IMG              =0x25,       /*抓图数据YUV*/
-	STREAM_ELEMENT_JPEG_PLAYB_IMG		=0x26,		 /*回放抓图*/
-	STREAM_ELEMENT_JPEG_PLAYB_THM		=0x27,		 /*回放抓缩略图*/
-
-    /* 智能算法结果相关 */
-    STREAM_ELEMENT_ADAS_RESULT          =0x30,       /*ADAS检测结果*/
-    STREAM_ELEMENT_VCA_PACKET           =0x31,       /*智能检测结果*/
-
-    /* 智能算法POS相关 */
-    STREAM_ELEMENT_FD_POS               =0x50,       /*人脸检测调试信息*/
-    /* 其他 */
-    STREAM_ELEMENT_HEARTBEAT            =0x71,       /*心跳信息*/
-    STREAM_ELEMENT_MAX  = INT_MAXI,
-}MEDIA_STREAM_TYPE_E;
 
 
 
@@ -165,8 +173,9 @@ typedef struct
 
 typedef struct
 {
-    MEDIA_STREAM_TYPE_E       eType;/* 编码类型 */
-    UINT32                    u32FrameLen;      /* 帧长 */
+    MEDIA_AUDIO_CODEC_TYPE_E       eType;/* 编码类型 */
+    PUINT8               	       pAddr;   /*audio地址 */
+    INT32                          iFrameLen;      /* 帧长 */
     UINT32                    u32SampleRate;    /* 采样率 */
     UINT32                    u32BitRate;       /* 比特率 */
     UINT32                    u32AudioNum;      /* 通道数 */
@@ -179,8 +188,7 @@ typedef struct
     UINT32     		u32Magic;           /* 常数，供定位 */
     UINT8    		u8Id;               /* 数据信息类型 */
     UINT8    		u8Chan;             /* 通道号 */
-    UINT16   		reserve;            /* 填充预留，保持4字节对其*/
-    MEDIA_STREAM_TYPE_E     eType;      /* 码流类型 I/P/A帧*/
+    UINT16   		reserve;            /* 填充预留，保持4字节*/
 	UINT8	 		res[4];
     DATE_TIME_T     stAbsTime;         /* 绝对时间 */
     UINT32     		u32TimeStamp;       /* 时间戳 1K时标 */

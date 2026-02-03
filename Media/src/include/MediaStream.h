@@ -113,6 +113,7 @@ public:
     INT32  StreamFrameConvert(MEDIA_VIDEO_FRAME_T* pFrameInfo,UINT uVoChan);
     INT32  SendStreamToDecPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength,INT32 iDrop);
     INT32  SendStreamToEncPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength,INT32 iDrop);
+    INT32  SendStreamToAudioPool(PUINT8 pStreamSrc,UINT32 uLength,INT32 iDrop);
 private:
 	INT32  SendStreamToRecPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength, BOOL bVideo, BOOL dropMode);
 	MEDIA_PARAM_T* mpParam;

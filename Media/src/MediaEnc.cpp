@@ -192,6 +192,8 @@ VOID MediaEnc::MediaEncSendStream(MEDIA_ENC_FRAME_T* pFrame)
 }
 
 
+
+
 VOID MediaEnc::MediaEncGetStreamFunc(void* pUserdata)
 {
 	//INT32 iRet = ERROR;
@@ -222,13 +224,16 @@ VOID MediaEnc::MediaEncGetStreamFunc(void* pUserdata)
 	    //调用给原始画面换成VO能够被识别出来的数据
 	    pInnerParam->pStream->StreamFrameConvert(&stFrameInfo,0);
 	    //送去编码
+	    //audio编码
+	     //pInnerParam->pAudio->MediaAudioSendStream(&stAudioInfo);
+		//视频编码
 		stEncFrame.stVideoFrame.stImageFrame.sSize =  MediaEnc::MediaEncEncode(stFrameInfo.stImageFrame.pPhyAddr,(char *)stEncFrame.stVideoFrame.stImageFrame.pVirAddr,MPPENCOERSIZE);
 		stEncFrame.stVideoFrame.stVideoHeader.iframeNum = pEncStatus->uEncFrm;
 		//MediaEncParseH264(&stEncFrame);
 		//送到编码共享流
 		MediaEncSendStream(&stEncFrame);
         //PS封装送流
-		//pInnerParam->pStream->StreamPack(&stEncFrame);
+		pInnerParam->pStream->StreamPack(&stEncFrame);
 		
 		pInnerParam->apVi[muChan]->PutFrameInQueue(&stFrameInfo);
 		SysMutex_unlock(&this->mtxEnc);

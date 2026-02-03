@@ -218,6 +218,66 @@ INT32  MediaStream::SendStreamToEncPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uL
 	return OK;
 }
 
+INT32  MediaStream::SendStreamToAudioPool(PUINT8 pStreamSrc,UINT32 uLength,INT32 iDrop)
+{
+	UINT32 u32W = 0;
+	UINT32 u32R = 0;
+	UINT32 u32SpareLen = 0;
+	UINT32 u32Part1 = 0;
+	UINT32 u32Part2;
+	UINT32 u32TotalLen;
+	PUINT8 ptr = NULL;
+    AUDIO_POOL_INFO_T* pPool = &(mpParam->stAudioPool);
+	if(pStreamSrc == NULL)
+	{
+		LOG_ERROR("pStreamSrc is NULL\n");
+		return ERROR;
+	}
+	if((void *)pPool->addr[0] == NULL)
+	{
+		LOG_ERROR("addr is NULL\n");
+		return ERROR;
+	}
+	if(pPool->totalLen == 0){
+		LOG_ERROR("totalLen is NULL\n");
+		return ERROR;
+	}
+	MUTEX_ID* pMutex = &pPool->mAudPool;
+	SysMutex_lock(pMutex,WAIT_FOREVER);
+	u32W = pPool->wIdx; //读写指针获得锁之后再赋值，避免不同线程的读写指针可能相同
+	if(iDrop)
+	{
+			u32R = pPool->wIdx;
+	}else{
+			u32R = pPool->rIdx;
+	}
+
+	u32TotalLen = pPool->totalLen;
+	ptr = (PUINT8)pPool->addr[0];
+	u32SpareLen = (u32R + u32TotalLen - u32W - 1) % u32TotalLen;	
+	if(uLength > u32SpareLen)
+	{
+		LOG_INFO("Lost one frame to enc pool,len=%d,spareLen=%d rIdx=%d  wIdx=%d \n",uLength,u32SpareLen,u32R,u32W);
+		SysMutex_unlock(pMutex);
+		return OK;
+	}
+	u32Part1 = u32TotalLen - u32W;
+	if(uLength > u32Part1)
+	{
+		u32Part2 = uLength - u32Part1;
+		SysMemory_copy((void *)(ptr + u32W),(void *)pStreamSrc, u32Part1);
+		SysMemory_copy((void *)ptr,(void *)(pStreamSrc+u32Part1), u32Part2);
+	}
+	else
+	{
+		SysMemory_copy((void *)(ptr+u32W),(void *)pStreamSrc,uLength);
+	}	
+	pPool->wIdx = (pPool->wIdx + uLength) % (UINT)u32TotalLen;
+	SysMutex_unlock(pMutex);
+	return OK;
+}
+
+
 INT32  MediaStream::SendStreamToRecPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uLength, BOOL bVideo, BOOL dropMode)
 {
 	UINT32 u32W = 0;
