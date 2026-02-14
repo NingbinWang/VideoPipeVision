@@ -229,7 +229,7 @@ App_Clean:
 
 Media: checkenv
 	@$(ECHO) "##### Build Media ####"
-	@make -C $(MEDIA_DIR) TARGET_MEDIA=$(TARGET_MEDIA) TARGET_V4L2=$(TARGET_V4L2) TARGET_AUDIO=$(TARGET_AUDIO)
+	@make -C $(MEDIA_DIR) TARGET_MEDIA=$(TARGET_MEDIA) TARGET_V4L2=$(TARGET_V4L2) TARGET_AUDIO=$(TARGET_AUDIO) TARGET_OPENCV=$(TARGET_OPENCV)
 	@if [ -f $(MEDIA_DIR)/Lib/libMedia.so ]; then \
 		$(CP) $(MEDIA_DIR)/Lib/libMedia.so $(OUTPUT_DIR)/lib/; \
 	fi

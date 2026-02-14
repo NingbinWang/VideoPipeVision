@@ -12,12 +12,14 @@
 #include "RKrga.h"
 #include "RKnpu.h"
 #include "MediaAudioInner.h"
+#include "MediaOsdInner.h"
 
 // Media内部参数
 typedef struct
 {
     BOOL                    algLoad;
 	MediaStream*            pStream;
+	MediaOsd*               pOsd;
 	MediaVi*                apVi[MAX_VI_CHAN_SOC+ MAX_USB_CHAN_SOC];//这里有多少路硬件路就有多少个Vi
 	MediaEnc*               apEnc[MAX_ENC_CHAN_SOC];
 	MediaEncCallback        AICallback;
@@ -41,6 +43,7 @@ MEDIA_FORMAT_TYPE_E MediaForccFrame(char * strFormate);
 RgaSURF_FORMAT MediaRgaFmtTranslation(MEDIA_FORMAT_TYPE_E eType);
 VO_CFG_PARAM_T* Media_Get_VoParam(UINT32 uChan);
 
+VOID AudioCodecLoop(VOID* pArg);
 
 
 

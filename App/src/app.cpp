@@ -32,6 +32,8 @@
 #endif
 #include "MediaManager.h"
 #include <pthread.h>
+#include "AudioMediaSource.h"
+#include "AACRtpSink.h"
 
 UsageEnvironment* env = NULL;
 
@@ -54,11 +56,11 @@ INT32 AppRtspServer(const char* strIp)
     MediaSession* session = MediaSession::createNew("live");//创建一个session
     MediaSource* mediaSource = VideoMediaSource::createNew(env); 
     RtpSink* rtpSink = H264RtpSink::createNew(env, mediaSource);
-	//MediaSource* audioSource = AlsaMediaSource::createNew(env);
+	//MediaSource* audioSource = AudioMediaSource::createNew(env);
     //RtpSink* audioRtpSink = AACRtpSink::createNew(env, audioSource);
     
     session->addRtpSink(MediaSession::TrackId0, rtpSink);
-   // session->addRtpSink(MediaSession::TrackId1, audioRtpSink);
+    //session->addRtpSink(MediaSession::TrackId1, audioRtpSink);
     server->addMeidaSession(session);
     server->start();
     std::cout<<"Play the media using the URL \""<<server->getUrl(session)<<"\""<<std::endl;

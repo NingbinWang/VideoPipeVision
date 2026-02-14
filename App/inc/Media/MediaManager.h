@@ -5,5 +5,6 @@ int MediaManagerInit();
 MEDIA_PARAM_T * MediaManagerGet();
 unsigned int  GetDecStream(unsigned int uChan,void *pUserData,INT32 iDrop);
 unsigned int  GetEncStream(unsigned int uChan,void *pUserData);
+unsigned int  GetAudioStream(void *pUserData);
 
 #endif

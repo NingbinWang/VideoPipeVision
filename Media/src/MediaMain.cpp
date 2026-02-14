@@ -88,6 +88,19 @@ MEDIA_FORMAT_TYPE_E MediaForccFrame(char * strFormate)
 	
 }
 
+
+VOID AudioCodecLoop(VOID* pArg)
+{
+	MEDIA_AUDIO_INFO_T stAudioInfo;
+	stAudioInfo.pAddr =  (PUINT8)SysMemory_malloc(AUDIOBUFFERSIZE);
+	while(1){
+		pInnerParam->pAudio->MediaAudioSendStream(&stAudioInfo);
+	}
+	SysMemory_free(stAudioInfo.pAddr);
+	
+}
+
+
 INT32 MediaInit(MEDIA_PARAM_T* pParam)
 {
 	UINT32 u32Chan = 0;
@@ -114,14 +127,15 @@ INT32 MediaInit(MEDIA_PARAM_T* pParam)
 		pParam->astEncCfgParam[u32Chan].uChan = u32Chan;
 		pInnerParam->apEnc[u32Chan] = MediaEnc::createNew(pParam->astEncCfgParam[u32Chan]);
 	}
+	//Osd
+	pInnerParam->pOsd = MediaOsd::createNew(*pParam);
 	//stream
 	pInnerParam->pStream = MediaStream::createNew(*pParam);
 	//audio
 	pInnerParam->pAudio = MediaAudio::createNew(pParam->stAudioCfgParam);
-
+	pInnerParam->pAudio->MediaAudioStartThread();
+    //start video
 	pInnerParam->apEnc[0]->MediaEncStartThread();
-
-	
     return 0;
 }
 

@@ -25,6 +25,9 @@ private:
     VI_CFG_PARAM_T* mpParams;
     Mutex* mpMutex;
     V4l2Capture* mpCapture;
+	// 内部辅助函数：计算Stride
+    INT32 calculateWidthStride(UINT32 width, MEDIA_FORMAT_TYPE_E format, UINT32 alignment = 32);
+    INT32 calculateHeightStride(UINT32 height, MEDIA_FORMAT_TYPE_E format, UINT32 alignment = 1);
 };
 
 #endif

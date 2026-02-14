@@ -39,6 +39,13 @@ LD_C_FLAGS += -DUSE_AUDIO
 LD_CPP_FLAGS += -DUSE_AUDIO
 endif
 
+#App use opencv
+ifneq (,$(findstring y,$(TARGET_OPENCV)))
+MODULE_SUB_INC += $(CURDIR)/../Libs/opencv/include
+OPENCV_LIB_PATH = $(CURDIR)/../Libs/opencv/lib
+LD_C_FLAGS += -L$(OPENCV_LIB_PATH) -DUSE_OPENCV
+LD_CPP_FLAGS += -L$(OPENCV_LIB_PATH) -DUSE_OPENCV
+endif
 
 MODULE_NAME = Media
 LINK_SHARE=y

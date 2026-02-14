@@ -20,7 +20,7 @@ typedef struct
 
 typedef struct
 {
-  int block_witdh;//一个block的大小
+  int block_width;//一个block的大小
   int block_height;
   int block_count;
   int x_pos;
@@ -30,7 +30,7 @@ typedef struct
 
 typedef struct
 {
-  int witdh;
+  int width;
   int height;
   int x_pos;
   int y_pos;

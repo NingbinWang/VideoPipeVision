@@ -49,8 +49,8 @@ typedef struct
 	unsigned int	uAudioStreamid;
 	unsigned int	uPrivtStreamid;
 	unsigned int	uStreamMode;		 /* 输入流模式*/
-	unsigned int	uMaxByteRate;		/* 码率，以byte为单位*/
-	unsigned int	uMaxPesLen;		/* 最大pes长度*/
+	unsigned int	uMaxByteRate;		 /* 码率，以byte为单位*/
+	unsigned int	uMaxPesLen;		     /* 最大pes长度*/
 	unsigned int	uVideoClip;
 	unsigned int	uDscptSets;
 	unsigned int	uBframeAudioSetPsh;

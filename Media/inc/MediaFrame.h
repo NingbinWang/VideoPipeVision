@@ -149,8 +149,8 @@ typedef struct {
 typedef struct
 {
     UINT32 	            u32NaluType;		   /*5: IDR，6: SEI，7: SPS，8: PPS，9: AUD*/
-    UINT32   	        u32NaluLen;          /* nalu的长度*/
-    VOID* 	            *pNaluPtr;         /* nalu的起始地址*/
+    UINT32   	        u32NaluLen;            /* nalu的长度*/
+    VOID* 	            *pNaluPtr;             /* nalu的起始地址*/
 }NALU_T;
 
 

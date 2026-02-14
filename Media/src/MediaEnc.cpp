@@ -191,9 +191,6 @@ VOID MediaEnc::MediaEncSendStream(MEDIA_ENC_FRAME_T* pFrame)
 	SysMemory_free(pOutputbuf);
 }
 
-
-
-
 VOID MediaEnc::MediaEncGetStreamFunc(void* pUserdata)
 {
 	//INT32 iRet = ERROR;
@@ -220,12 +217,11 @@ VOID MediaEnc::MediaEncGetStreamFunc(void* pUserdata)
 	    //配置OSD时间
 	    SysTime_get_msec(&stEncFrame.u64TimeStamp);//获取时间戳
 	    //进行OSD叠加
+	    //pInnerParam->pOsd->MediaOsdOpenCvSetTime(&stFrameInfo);
 	   	//设置AI回调
 	    //调用给原始画面换成VO能够被识别出来的数据
 	    pInnerParam->pStream->StreamFrameConvert(&stFrameInfo,0);
 	    //送去编码
-	    //audio编码
-	     //pInnerParam->pAudio->MediaAudioSendStream(&stAudioInfo);
 		//视频编码
 		stEncFrame.stVideoFrame.stImageFrame.sSize =  MediaEnc::MediaEncEncode(stFrameInfo.stImageFrame.pPhyAddr,(char *)stEncFrame.stVideoFrame.stImageFrame.pVirAddr,MPPENCOERSIZE);
 		stEncFrame.stVideoFrame.stVideoHeader.iframeNum = pEncStatus->uEncFrm;

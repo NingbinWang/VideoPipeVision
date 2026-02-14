@@ -66,10 +66,12 @@ int MediaManagerInit()
 	pManagerParm->astVoCfgParam[0].u32ImageHeight = 1080;
 	pManagerParm->astVoCfgParam[0].u32ImageWidth = 720;
 	pManagerParm->astVoCfgParam[0].u32FrameSize = 1080*720*4;//一帧的数据是 高*宽*位宽
+	//OSD
+	pManagerParm->bOSD = true;
 	//音频
 	pManagerParm->stAudioCfgParam.uChan = 0;
 	pManagerParm->stAudioCfgParam.uPcmChannel = 2;
-	pManagerParm->stAudioCfgParam.uPcmSampleRate = 44100;
+	pManagerParm->stAudioCfgParam.uPcmSampleRate = 48000;
 	pManagerParm->stAudioCfgParam.uPcmAccess = SND_PCM_ACCESS_RW_INTERLEAVED;//SND_PCM_STREAM_PLAYBACK 0  SND_PCM_STREAM_CAPTURE 1
 	pManagerParm->stAudioCfgParam.uPcmFormat = SND_PCM_FORMAT_S16_LE;//SND_PCM_FORMAT_S16_LE 2
 	pManagerParm->stAudioCfgParam.uPcmFrameSize = 1024;
@@ -272,6 +274,105 @@ unsigned int  GetEncStream(unsigned int uChan,void *pUserData)
 				uSize = pFrame->stImageFrame.sSize;
 				uFrameSize = pFrame->stImageFrame.sSize + uFrameHeaderSize;
 				LOG_INFO("frame size:%d all：%d H:%d w:%d\n",uSize,uFrameSize,pFrame->stVideoHeader.u32ImageHeight,pFrame->stVideoHeader.u32ImageWidth);
+				if(uCurLen < uFrameSize){
+					 SysMemory_free(pData);
+					 LOG_INFO("uCurLen too small uCurLen = %d uFrameSize = %d\n",uCurLen,uFrameSize);
+         	   		 SysMutex_unlock(pMutex);
+               		 return 0;
+				}
+				SysMemory_free(pData);
+				pData = SysMemory_malloc(uFrameSize);
+				if(uLen1 < uFrameSize){
+					SysMemory_copy(pData,(void *)((PUINT8)pPool->addr[0] + uR), uLen1);
+					SysMemory_copy((void*)((PUINT8)pData+uLen1),(void *)(PUINT8)pPool->addr[0], uFrameSize-uLen1);
+				}else{
+					SysMemory_copy(pData,(void *)((PUINT8)pPool->addr[0] + uR), uFrameSize);
+				}
+				if(pUserData != NULL){
+					SysMemory_copy(pUserData, (void *)((PUINT8)pData+sizeof(MEDIA_VIDEO_FRAME_T)), uSize);
+				}
+				pPool->rIdx = (pPool->rIdx + uFrameSize) % pPool->totalLen;
+				SysMemory_free(pData);
+        }
+    }
+	SysMutex_unlock(pMutex);
+    return uSize;
+}
+
+unsigned int  GetAudioStream(void *pUserData)
+{
+   
+    UINT uLen1 = 0;
+	UINT uLen2 = 0;
+	UINT uCurLen=0;
+    VOID * pData = NULL;
+    UINT uR = 0;
+	UINT uW = 0;
+	UINT uFrameHeaderSize = sizeof(MEDIA_AUDIO_INFO_T);
+	MEDIA_AUDIO_INFO_T* pFrame;
+	UINT uFrameSize = 0;
+	UINT uSize = 0;
+    AUDIO_POOL_INFO_T *pPool = NULL;
+    bool bHaveData = true;
+	MUTEX_ID* pMutex = NULL;
+	if(pManagerParm == NULL)
+	{
+		return 0;
+	}
+	if((void *)pManagerParm->stAudioPool.addr[0] == NULL)
+	{
+		return 0;
+	}
+	pMutex = &(pManagerParm->stAudioPool.mAudPool);
+	SysMutex_lock(pMutex,WAIT_FOREVER);
+    while (bHaveData)
+    {
+        bHaveData = false;
+        pPool=&(pManagerParm->stAudioPool);
+		if(pPool == NULL)
+		{
+		   LOG_ERROR("NO RAWPOOL!\n");
+		   return 0;
+		}
+        uW=pPool->wIdx;
+		uR=pPool->rIdx;
+        // get data length in share memory
+        if (uW >= uR)
+        {
+                uLen1 = uW - uR;
+                uLen2 = 0;
+         }
+         else
+         {
+                uLen1 = pPool->totalLen - uR;
+                uLen2 = uW;
+         }
+         uCurLen = uLen1+uLen2;
+         if(uCurLen < uFrameHeaderSize)
+         {
+               LOG_INFO("uCurLen too small uCurLen = %d uFrameHeaderSize = %d\n",uCurLen,uFrameHeaderSize);
+         	   SysMutex_unlock(pMutex);
+               return 0;
+         }
+         if(uCurLen >= uFrameHeaderSize)
+         {          
+                if((void*)pPool->addr[0] == NULL)
+                {
+                    LOG_ERROR("invalid addr[0] !\n");
+					SysMutex_unlock(pMutex);
+                    return 0;
+                }
+				pData = SysMemory_malloc(uFrameHeaderSize);
+				memset((void *)pData,0,uFrameHeaderSize);
+				if(uLen1 < uFrameHeaderSize){
+					SysMemory_copy(pData,(void *)((PUINT8)pPool->addr[0] + uR), uLen1);
+					SysMemory_copy((void*)((PUINT8)pData+uLen1),(void *)(PUINT8)pPool->addr[0], uFrameHeaderSize-uLen1);
+				}else{
+					SysMemory_copy(pData,(void *)((PUINT8)pPool->addr[0] + uR), uFrameHeaderSize);
+				}
+				pFrame = (MEDIA_AUDIO_INFO_T *)pData;	
+				uSize = pFrame->iFrameLen;
+				uFrameSize = pFrame->iFrameLen + uFrameHeaderSize;
 				if(uCurLen < uFrameSize){
 					 SysMemory_free(pData);
 					 LOG_INFO("uCurLen too small uCurLen = %d uFrameSize = %d\n",uCurLen,uFrameSize);

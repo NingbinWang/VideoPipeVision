@@ -59,6 +59,7 @@ typedef struct
     UINT32                             u32DecChanCnt; //解码通道个数
     /*解码码流共享缓存区地址*/
     DEC_SHARE_BUF_T                    aDecPool[MAX_DEC_CHAN_SOC];/*解码码流下载 输出的流共用*/
+    BOOL                               bOSD;//osd开关
     //LOGO
 	UINT8                              u8logoAddr[OSD_LOGO_LEN]; //logo图像
      /*图片回放下载码流*/

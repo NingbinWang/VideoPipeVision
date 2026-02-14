@@ -63,7 +63,7 @@ int MediaAi_VideoDrawRect(IMAGE_FRAME_T* img,DETECT_RESULT_GROUP_T *detect_resul
         //OSD_RECT_T osdrect = {0};
         osdrect[i].x_pos = AI_ALIGN(x1,2);
         osdrect[i].y_pos = AI_ALIGN(y1,2);
-        osdrect[i].witdh = AI_ALIGN((x2 - x1),2);
+        osdrect[i].width = AI_ALIGN((x2 - x1),2);
         osdrect[i].height = AI_ALIGN((y2 - y1),2);
        // mediarga->img_fillrectangle_virt((IMAGE_T *)img,osdrect);
     }

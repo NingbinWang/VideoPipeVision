@@ -78,7 +78,7 @@ typedef struct
     unsigned int y; //图像中心垂直坐标
     unsigned int w; //图像窗口宽最大不能超过VIDEO_PARAM_CFG结构体中image_viW, 最小64
     unsigned int h; //图像窗口高最大不能超过VIDEO_PARAM_CFG结构体中image_viH, 最小32
-} VI_Cover_T;
+} VI_COVER_T;
 
 typedef struct
 {
@@ -91,7 +91,7 @@ typedef struct
 	// 遮挡块数 
 	unsigned char CoverNum;
 	// 遮挡区域（自定义模式生效） 
-    VI_Cover_T	cover_window_rec[4];
+    VI_COVER_T	cover_window_rec[4];
 } VI_COVER_INFO_T;
 
 typedef struct

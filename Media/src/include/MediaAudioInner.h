@@ -22,6 +22,7 @@ public:
 	INT32 MediaAudioGetAacData(PUINT8 pAacdata);
 	INT32 MediaAudioEncPcmToAac(INT16 *pPcmSamples, UINT uNumSamples, UINT8 *pOutData);
 	INT32 MediaAudioSendStream(MEDIA_AUDIO_INFO_T* pstAudioInfo);
+	INT32 MediaAudioStartThread(VOID);
 	
 private:
 	snd_pcm_t *mpPcmhandle;

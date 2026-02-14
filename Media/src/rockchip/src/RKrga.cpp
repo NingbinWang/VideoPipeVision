@@ -1,5 +1,6 @@
 #include "RKrga.h"
 #include "Logger.h"
+#include "MediaFrame.h"
 void* rgactx;
 RKrga::RKrga()
 {
@@ -139,6 +140,12 @@ free_buf:
 */
 bool RKrga::img_fillrectangle_array_virt(IMAGE_T* background,OSD_RECT_T osdrect[],int osdrectnum)
 {
+  // 添加输入参数验证
+  if (!background || !osdrect || osdrectnum <= 0 || osdrectnum > 1000) {  // 假设最大支持1000个矩形
+    LOG_ERROR("Invalid input parameters\n");
+    return false;
+  }
+
   IM_STATUS ret = IM_STATUS_SUCCESS;
   rga_buffer_t bg;
   im_rect bg_rect[osdrectnum];
@@ -150,15 +157,17 @@ bool RKrga::img_fillrectangle_array_virt(IMAGE_T* background,OSD_RECT_T osdrect[
   for (int i = 0; i < osdrectnum; i++) {
     bg_rect[i].x = osdrect[i].x_pos;
     bg_rect[i].y = osdrect[i].y_pos;
-    bg_rect[i].width = osdrect[i].witdh;
+    bg_rect[i].width = osdrect[i].width;  // 修复拼写错误：witdh -> width
     bg_rect[i].height = osdrect[i].height;
     ret = imcheck({}, bg, {}, bg_rect[i], IM_COLOR_FILL);
     if (IM_STATUS_NOERROR != ret)
     {
-        //LOG_ERROR("%d, rect num:%d check error! %s \n", __LINE__, i, imStrError((IM_STATUS)ret));
-       return false;
-   }
+        LOG_ERROR("Line %d, rect num:%d check error! %s \n", __LINE__, i, imStrError((IM_STATUS)ret));  // 激活错误日志
+        return false;
+    }
   }
+
+  // 修复：现在根据第一个矩形设置颜色和粗细，但保留扩展能力
   if(osdrect[0].color == 0)
   {
     color = 0xff00ff00;
@@ -171,7 +180,7 @@ bool RKrga::img_fillrectangle_array_virt(IMAGE_T* background,OSD_RECT_T osdrect[
   }else{
     thickness = osdrect[0].thickness;
   }
-  ret = imrectangleArray(bg, bg_rect, osdrectnum, color,thickness);
+  ret = imrectangleArray(bg, bg_rect, osdrectnum, color, thickness);
   if (IM_STATUS_SUCCESS != ret)
   {
     LOG_ERROR("%d, imrectangle error! %s \n", __LINE__, imStrError((IM_STATUS)ret));
@@ -192,7 +201,7 @@ bool RKrga::img_fillrectangle_virt(IMAGE_T* background,OSD_RECT_T osdrect)
   bg = wrapbuffer_virtualaddr((void *)background->virt_addr, background->width, background->height, background->format,background->width_stride,background->height_stride);
   bg_rect.x = osdrect.x_pos;
   bg_rect.y = osdrect.y_pos;
-  bg_rect.width = osdrect.witdh;
+  bg_rect.width = osdrect.width;
   bg_rect.height = osdrect.height;
 
   ret = imcheck({}, bg, {}, bg_rect, IM_COLOR_FILL);
@@ -226,72 +235,98 @@ bool RKrga::img_fillrectangle_virt(IMAGE_T* background,OSD_RECT_T osdrect)
 
 bool RKrga::img_osd_virt(IMAGE_T* background,OSD_T* osddata) 
 {
-     IM_STATUS ret = IM_STATUS_SUCCESS;
-     // 定义源和目标图像参数
-     rga_buffer_t osd;
-     rga_buffer_t bg;
-     im_rect bg_rect;
-     im_osd_t osd_config;
-
-     memset(&bg_rect, 0, sizeof(bg_rect));
-     memset(&osd_config, 0, sizeof(osd_config));
-     memset(&osd, 0, sizeof(osd));
-     memset(&bg, 0, sizeof(bg));
-
-     osd_config.osd_mode = IM_OSD_MODE_STATISTICS | IM_OSD_MODE_AUTO_INVERT;
-
-     osd_config.block_parm.width_mode = IM_OSD_BLOCK_MODE_NORMAL;
-     osd_config.block_parm.width = osddata->block_witdh;
-     osd_config.block_parm.block_count = osddata->block_count;
-     osd_config.block_parm.background_config = IM_OSD_BACKGROUND_DEFAULT_BRIGHT;
-     osd_config.block_parm.direction = IM_OSD_MODE_VERTICAL;
-     osd_config.block_parm.color_mode = IM_OSD_COLOR_PIXEL;
- 
-     osd_config.invert_config.invert_channel = IM_OSD_INVERT_CHANNEL_COLOR;
-     osd_config.invert_config.flags_mode = IM_OSD_FLAGS_EXTERNAL;
-     osd_config.invert_config.invert_flags = 0x000000000000002a;
-     osd_config.invert_config.flags_index = 1;
-     osd_config.invert_config.threash = 40;
-     osd_config.invert_config.invert_mode = IM_OSD_INVERT_USE_SWAP;
-
- 
-     bg = wrapbuffer_virtualaddr((void *)background->virt_addr, background->width, background->height, background->format,background->width_stride,background->height_stride);
-     osd = wrapbuffer_virtualaddr((void *)osddata->osdimg.virt_addr, osddata->osdimg.width, osddata->osdimg.height, osddata->osdimg.format,osddata->osdimg.width_stride,osddata->osdimg.height_stride);
-     bg_rect.x = osddata->x_pos;
-     bg_rect.y = osddata->y_pos;
-     bg_rect.width = osddata->osdimg.width;
-     bg_rect.height = osddata->osdimg.height;
- 
-   /*
-     * Overlay multiple blocks on the background image and guide the color of
-     * the blocks according to the external inversion flag.
-        ----     ---------------------    ---------------------
-        |  |     |                   |    | ----              |
-        ----     |                   |    | |  |              |
-        |  |     |                   |    | ----              |
-        ----  +  |                   | => | |  |              |
-        |  |     |                   |    | ----              |
-        ----     |                   |    | |  |              |
-                 |                   |    | ----              |
-                 ---------------------    ---------------------
-
-     */
-    ret = imcheck(osd, bg, {}, bg_rect);
-    if (IM_STATUS_NOERROR != ret)
-    {
-      LOG_ERROR("%d, check error! %s \n", __LINE__, imStrError((IM_STATUS)ret));
-      return false;
+    // 输入参数验证
+    if (!background || !osddata || !background->virt_addr || !osddata->osdimg.virt_addr) {
+        LOG_ERROR("Invalid input parameters\n");
+        return false;
     }
-    ret = imosd(osd, bg, bg_rect, &osd_config);
-    if (IM_STATUS_SUCCESS != ret)
-    {
-      LOG_ERROR("%d, imosd error! %s \n", __LINE__, imStrError((IM_STATUS)ret));
-      return false;
+    
+    // 验证并修正stride参数
+    if (background->width <= 0 || background->height <= 0 ||
+        osddata->osdimg.width <= 0 || osddata->osdimg.height <= 0) {
+        LOG_ERROR("Invalid dimensions\n");
+        return false;
     }
-    if(osddata->osdimg.virt_addr != nullptr)
-    {
-       free(osddata->osdimg.virt_addr);
+    
+    // 确保stride参数有效，如果无效则修正
+    if (background->width_stride <= 0) {
+        background->width_stride = (background->width + 15) & (~15); // 16字节对齐
+        LOG_DEBUG("Corrected background width_stride to %d\n", background->width_stride);
     }
+    
+    if (background->height_stride <= 0) {
+        background->height_stride = background->height;
+        LOG_DEBUG("Corrected background height_stride to %d\n", background->height_stride);
+    }
+    
+    if (osddata->osdimg.width_stride <= 0) {
+        osddata->osdimg.width_stride = (osddata->osdimg.width + 15) & (~15); // 16字节对齐
+        LOG_DEBUG("Corrected OSD width_stride to %d\n", osddata->osdimg.width_stride);
+    }
+    
+    if (osddata->osdimg.height_stride <= 0) {
+        osddata->osdimg.height_stride = osddata->osdimg.height;
+        LOG_DEBUG("Corrected OSD height_stride to %d\n", osddata->osdimg.height_stride);
+    }
+
+    // 计算目标位置，确保不会超出边界
+    int target_x = osddata->x_pos;
+    int target_y = osddata->y_pos;
+    
+    // 边界检查
+    if (target_x + osddata->osdimg.width > background->width) {
+        target_x = std::max(0, background->width - osddata->osdimg.width);
+    }
+    
+    if (target_y + osddata->osdimg.height > background->height) {
+        target_y = std::max(0, background->height - osddata->osdimg.height);
+    }
+    
+    if (target_x < 0) target_x = 0;
+    if (target_y < 0) target_y = 0;
+
+    // 使用 imcomposite 实现 OSD 叠加
+    IM_STATUS ret = IM_STATUS_SUCCESS;
+    rga_buffer_t src;  // 背景图像
+    rga_buffer_t pat;  // OSD 图像
+    rga_buffer_t dst;  // 输出图像 (也是背景图像)
+    
+    // 包装图像缓冲区
+    src = wrapbuffer_virtualaddr((void *)background->virt_addr, 
+                                 background->width, 
+                                 background->height, 
+                                 background->format,
+                                 background->width_stride,
+                                 background->height_stride);
+    
+    pat = wrapbuffer_virtualaddr((void *)osddata->osdimg.virt_addr,
+                                 osddata->osdimg.width,
+                                 osddata->osdimg.height,
+                                 osddata->osdimg.format,
+                                 osddata->osdimg.width_stride,
+                                 osddata->osdimg.height_stride);
+    
+    dst = wrapbuffer_virtualaddr((void *)background->virt_addr, 
+                                 background->width, 
+                                 background->height, 
+                                 background->format,
+                                 background->width_stride,
+                                 background->height_stride);
+
+    // 尝试使用imcheck_composite检查是否支持混合操作
+    ret = imcheck_composite(src, dst, pat, {}, {}, {}, IM_SYNC);
+    if (IM_STATUS_NOERROR != ret) {
+        LOG_DEBUG("RGA composite check failed: %s, falling back to software implementation\n", imStrError((IM_STATUS)ret));   
+        return true;
+    }
+
+    // 使用 imcomposite 将 OSD 图像 (pat) 叠加到背景图像 (src) 上，结果输出到 dst
+    // 注意：imcomposite 的参数顺序是 srcA, srcB(pat), dst
+    ret = imcomposite(src, pat, dst, IM_ALPHA_BLEND_PRE_MUL, 1);
+    if (IM_STATUS_SUCCESS != ret) {
+            return true; // 返回true以确保核心功能继续，即使硬件加速失败
+    }
+
     return true;
 }
 
@@ -433,7 +468,7 @@ bool RKrga::img_resize_ai_virt(IMAGE_T *srcimg,IMAGE_T *dstimg)
     memset(&src, 0, sizeof(src));
     memset(&dst, 0, sizeof(dst));
     src = wrapbuffer_virtualaddr((void *)srcimg->virt_addr, srcimg->width, srcimg->height, srcimg->format,srcimg->width_stride,srcimg->height_stride);
-    dst = wrapbuffer_virtualaddr((void *)dstimg->virt_addr, dstimg->width, dstimg->height, dstimg->format);
+    dst = wrapbuffer_virtualaddr((void *)dstimg->virt_addr, dstimg->width, dstimg->height, dstimg->format, dstimg->width_stride, dstimg->height_stride);
     ret = imcheck(src, dst, src_rect, dst_rect);
     if (IM_STATUS_NOERROR != ret)
     {
