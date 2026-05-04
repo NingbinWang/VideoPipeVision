@@ -5,38 +5,38 @@
 
 int  MediaEnc::MediaEncEncode(void* mpp_buf, char* enc_buf, int max_size)
 {
-   return mpEncoder->Encode(mpp_buf,enc_buf,max_size);
+	return mpEncoder->Encode(mpp_buf,enc_buf,max_size);
 }
 
 
 int  MediaEnc::MediaEncGetHeader(char* enc_buf, int max_size)
 {
-   return mpEncoder->GetHeader(enc_buf,max_size);
+	return mpEncoder->GetHeader(enc_buf,max_size);
 }
 
 int  MediaEnc::MediaEncSetCallback(MediaEncCallback callback )
 {
-   return mpEncoder->SetCallback((MppEncoderFrameCallback)callback);
+	return mpEncoder->SetCallback((MppEncoderFrameCallback)callback);
 }
 
 size_t MediaEnc::MediaEncGetFrameSize()
 {
-   return mpEncoder->GetFrameSize();
+	return mpEncoder->GetFrameSize();
 }
 
 void* MediaEnc::MediaEncGetInputFrame()
 {
-   return mpEncoder->GetInputFrameBuffer();
+	return mpEncoder->GetInputFrameBuffer();
 }
 
 int MediaEnc::MediaEncGetInputFrameBufferFd(void * source)
 {
-   return mpEncoder->GetInputFrameBufferFd(source);
+	return mpEncoder->GetInputFrameBufferFd(source);
 }
 
 void* MediaEnc::MediaEncGetInputFrameBufferAddr(void * source)
 {
-   return mpEncoder->GetInputFrameBufferAddr(source);
+	return mpEncoder->GetInputFrameBufferAddr(source);
 }
 
 
@@ -82,20 +82,20 @@ MediaEnc* MediaEnc::createNew(MEDIA_ENC_PARAM_T&pParams)
 MediaEnc::MediaEnc(MEDIA_ENC_PARAM_T *pParams):
 mpParams(pParams)
 {
-	 MEDIA_FORMAT_TYPE_E eType ;
-	 MppEncoderParams stEncoderParam;
-	 memset(&stEncoderParam,0,sizeof(MppEncoderParams));
-	 eType = MediaForccFrame(pParams->strStreamType);
-	 stEncoderParam.width = (RK_U32)pParams->uEncW;
-     stEncoderParam.height = (RK_U32)pParams->uEncH;
-     stEncoderParam.fmt = MediaEncFmtTranslation(eType);
-     stEncoderParam.type = MediaEncTypeTranslation(pParams->eEncoderType);
-     stEncoderParam.rc_mode =  MediaEncTypeTranslation(pParams->eRcMode);
-	 mpEncoder = Media_Getmppencoder();
-	 mpEncoder->Init(stEncoderParam,nullptr);//Encoder目前只有一个所以这是要修正的
-	 muChan = pParams->uChan;
-	 SysMutex_create(&this->mtxEnc, 0);
-	 LOG_INFO("chan%d enc ok!\n",muChan);
+	MEDIA_FORMAT_TYPE_E eType ;
+	MppEncoderParams stEncoderParam;
+	memset(&stEncoderParam,0,sizeof(MppEncoderParams));
+	eType = MediaForccFrame(pParams->strStreamType);
+	stEncoderParam.width = (RK_U32)pParams->uEncW;
+    stEncoderParam.height = (RK_U32)pParams->uEncH;
+    stEncoderParam.fmt = MediaEncFmtTranslation(eType);
+    stEncoderParam.type = MediaEncTypeTranslation(pParams->eEncoderType);
+    stEncoderParam.rc_mode =  MediaEncTypeTranslation(pParams->eRcMode);
+	mpEncoder = Media_Getmppencoder();
+	mpEncoder->Init(stEncoderParam,nullptr);//Encoder目前只有一个所以这是要修正的
+	muChan = pParams->uChan;
+	SysMutex_create(&this->mtxEnc, 0);
+	LOG_INFO("chan%d enc ok!\n",muChan);
 }
 
 MediaEnc::~MediaEnc() 
@@ -112,7 +112,7 @@ INT32 MediaEnc::MediaEncStartCode(const CHAR *buf,UINT32 pos) {
     }
     // 检查 3字节起始码 0x00 00 01
     else if (buf[pos+0] == 0x00 && buf[pos+1] == 0x00 && 
-             buf[pos+2] == 0x01) {
+            buf[pos+2] == 0x01) {
         return 3;
     }
     return ERROR; // 未找到
@@ -215,12 +215,12 @@ VOID MediaEnc::MediaEncGetStreamFunc(void* pUserdata)
 		stFrameInfo.stVideoHeader.uChan = muChan;
 		pEncStatus->uEncFrm = stFrameInfo.stVideoHeader.iframeNum;
 	    //配置OSD时间
-	    SysTime_get_msec(&stEncFrame.u64TimeStamp);//获取时间戳
+		SysTime_get_msec(&stEncFrame.u64TimeStamp);//获取时间戳
 	    //进行OSD叠加
 	    //pInnerParam->pOsd->MediaOsdOpenCvSetTime(&stFrameInfo);
 	   	//设置AI回调
 	    //调用给原始画面换成VO能够被识别出来的数据
-	    pInnerParam->pStream->StreamFrameConvert(&stFrameInfo,0);
+		pInnerParam->pStream->StreamFrameConvert(&stFrameInfo,0);
 	    //送去编码
 		//视频编码
 		stEncFrame.stVideoFrame.stImageFrame.sSize =  MediaEnc::MediaEncEncode(stFrameInfo.stImageFrame.pPhyAddr,(char *)stEncFrame.stVideoFrame.stImageFrame.pVirAddr,MPPENCOERSIZE);
@@ -240,9 +240,9 @@ VOID MediaEnc::MediaEncGetStreamFunc(void* pUserdata)
 
 
 VOID MediaEnc::MediaEncStopThread() {
-    	bRunning = false;
+		bRunning = false;
         if (mThread.joinable()) {
-            mThread.join();
+			mThread.join();
         }
     }
 

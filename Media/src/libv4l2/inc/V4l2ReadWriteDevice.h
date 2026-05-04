@@ -11,7 +11,6 @@
 
 
 #pragma once
- 
 #include "V4l2Device.h"
 
 

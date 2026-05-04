@@ -4,6 +4,7 @@
 #include "SysTime.h"
 #include "SysPthread.h"
 #include <sys/sysinfo.h>
+#ifdef USE_AUDIO
 
 MediaAudio* MediaAudio::createNew(AUDIO_CFG_PARAM_T&pParams)
 {
@@ -616,3 +617,4 @@ INT32 MediaAudio::MediaAudioStartThread(VOID)
     }
     return OK;
 }
+#endif

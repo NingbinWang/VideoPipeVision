@@ -5,19 +5,19 @@ CURDIR = $(shell pwd)
 #export ROOT_PATH = $(CURDIR)/output
 export ROOT_PATH = $(CURDIR)
 # cross host
-TARGET_CROSS_COMPILE_DIR = $(CURDIR)/../../prebuilts/gcc/linux-x86/aarch64/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu
+#TARGET_CROSS_COMPILE_DIR = $(CURDIR)/../../prebuilts/gcc/linux-x86/aarch64/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu
 #TARGET_CROSS_COMPILE_DIR = $(CURDIR)/../../prebuilts/gcc/linux-x86/aarch64/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu
-TARGET_CROSS_HOST = $(TARGET_CROSS_COMPILE_DIR)/bin/aarch64-linux-gnu
+#TARGET_CROSS_HOST = $(TARGET_CROSS_COMPILE_DIR)/bin/aarch64-linux-gnu
 #TARGET_CROSS_HOST = $(TARGET_CROSS_COMPILE_DIR)/bin/aarch64-rockchip-linux-gnu
-TARGET_COMPILE_LIBCDIR=$(TARGET_CROSS_COMPILE_DIR)/aarch64-linux-gnu/libc
+#TARGET_COMPILE_LIBCDIR=$(TARGET_CROSS_COMPILE_DIR)/aarch64-linux-gnu/libc
 #TARGET_COMPILE_LIBCDIR=$(TARGET_CROSS_COMPILE_DIR)/aarch64-rockchip-linux-gnu/lib64
 #TARGET_COMPILE_SYSROOT=$(TARGET_CROSS_COMPILE_DIR)/aarch64-rockchip-linux-gnu/sysroot
 
-##TARGET_CROSS_COMPILE_DIR = $(CURDIR)/../../prebuilts/gcc/linux-x86/aarch64/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu
+TARGET_CROSS_COMPILE_DIR = $(CURDIR)/../../prebuilts/gcc/linux-x86/aarch64/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu
 
-#TARGET_CROSS_HOST = $(TARGET_CROSS_COMPILE_DIR)/bin/aarch64-none-linux-gnu
+TARGET_CROSS_HOST = $(TARGET_CROSS_COMPILE_DIR)/bin/aarch64-none-linux-gnu
 
-#TARGET_COMPILE_LIBCDIR=$(TARGET_CROSS_COMPILE_DIR)/aarch64-none-linux-gnu/libc
+TARGET_COMPILE_LIBCDIR=$(TARGET_CROSS_COMPILE_DIR)/aarch64-none-linux-gnu/libc
 
 export $(TARGET_CROSS_HOST)
 ##CROSS_COMPILE_HOST = aarch64-linux-gnu
@@ -45,7 +45,7 @@ XVID_VER=1.3.7
 FFMPEG_VER=4.2.11
 YOLOFAST_VER=v.1.1.0
 DRM_VER=2.4.124
-ALSA_VER=1.1.9
+ALSA_VER=1.2.9
 FDKAAC_VER=master
 MP4V2_VER=main
 
@@ -418,7 +418,7 @@ opencv:ffmpeg_rockchip
 	fi
 	if [ ! -e $(ROOT_PATH)/opencv-$(OPENCV_VER)/build/ ]; then \
 		export PKG_CONFIG_PATH=$(ROOT_PATH)/opencv/lib/pkgconfig; \
-    	export LD_LIBRARY_PATH=$(TARGET_COMPILE_LIBCDIR):$(ROOT_PATH)/opencv/lib; \
+		export LD_LIBRARY_PATH=$(TARGET_COMPILE_LIBCDIR):$(ROOT_PATH)/opencv/lib; \
 		export PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR):$(ROOT_PATH)/opencv/lib; \
 		touch $(ROOT_PATH)/opencv-$(OPENCV_VER)/platforms/linux/$(CROSS_COMPILE_HOST).cmake;\
 		echo "set(CMAKE_SYSTEM_PROCESSOR aarch64)" > $(ROOT_PATH)/opencv-$(OPENCV_VER)/platforms/linux/$(CROSS_COMPILE_HOST).cmake; \

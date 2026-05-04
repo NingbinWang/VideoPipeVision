@@ -5,8 +5,9 @@
 #include "Logger.h"
 #include "SysTime.h"
 #include "SysMutex.h"
+#ifdef USE_AUDIO
 #include <alsa/asoundlib.h>
-
+#endif
 MEDIA_PARAM_T *pManagerParm = NULL;
 
 int MediaManagerInit()
@@ -69,6 +70,7 @@ int MediaManagerInit()
 	//OSD
 	pManagerParm->bOSD = true;
 	//音频
+	#ifdef USE_AUDIO
 	pManagerParm->stAudioCfgParam.uChan = 0;
 	pManagerParm->stAudioCfgParam.uPcmChannel = 2;
 	pManagerParm->stAudioCfgParam.uPcmSampleRate = 48000;
@@ -88,6 +90,7 @@ int MediaManagerInit()
 	pManagerParm->stAudioPool.wIdx = 0;
 	//音频的内存池
 	pManagerParm->stAudioPool.addr[0] = SysMemory_malloc(pManagerParm->stAudioPool.totalLen);
+	#endif
     //RecPool池
 	pManagerParm->astRecPool[0].totalLen = 12*1024*1024;
 	pManagerParm->astRecPool[1].totalLen = 4*1024*1024;//不使用

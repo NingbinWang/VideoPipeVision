@@ -43,8 +43,8 @@ void MediaOsd::createTimeString(char* timeStr, int bufSize)
 
     // 格式化时间字符串 YYYY-MM-DD HH:MM:SS
     snprintf(timeStr, bufSize, "%04d-%02d-%02d %02d:%02d:%02d",
-             sysTime.uYear, sysTime.uMonth, sysTime.uDay,
-             sysTime.uHour, sysTime.uMinute, sysTime.uSec);
+            sysTime.uYear, sysTime.uMonth, sysTime.uDay,
+            sysTime.uHour, sysTime.uMinute, sysTime.uSec);
 }
 
 void MediaOsd::drawTimestampOnImage(cv::Mat& img, const char* timestamp, int x, int y)
@@ -147,8 +147,8 @@ void MediaOsd::initializeOsdData(OSD_T* osdData, IMAGE_T* srcimg)
             // 将灰度文字复制到Y平面上，注意使用stride
             for(int i = 0; i < osdData->osdimg.height; i++) {
                 memcpy(osdData->osdimg.virt_addr + i * osdData->osdimg.width_stride,
-                       tempMat.ptr(i), 
-                       std::min(osdData->osdimg.width, tempMat.cols));
+                        tempMat.ptr(i), 
+                        std::min(osdData->osdimg.width, tempMat.cols));
             }
         } else {
             // 其他格式使用RGBA处理
@@ -249,15 +249,15 @@ INT32 MediaOsd::MediaOsdOpenCvSetTime(MEDIA_VIDEO_FRAME_T *pFrame)
             // 复制原始数据到临时Mat
             for (int i = 0; i < height; ++i) {
                 memcpy(src_nv12.data + i * width_stride, 
-                       src_ptr + i * width_stride, 
-                       width);
+                        src_ptr + i * width_stride, 
+                        width);
             }
             
             // 复制UV平面数据
             for (int i = 0; i < height / 2; ++i) {
                 memcpy(src_nv12.data + (height + i) * width_stride, 
-                       src_ptr + (height + i) * width_stride, 
-                       width);
+                        src_ptr + (height + i) * width_stride, 
+                        width);
             }
             
             // 转换到BGR进行绘图
@@ -292,8 +292,8 @@ INT32 MediaOsd::MediaOsdOpenCvSetTime(MEDIA_VIDEO_FRAME_T *pFrame)
             // 复制Y平面数据
             for (int i = 0; i < height; ++i) {
                 memcpy(dst_ptr + i * width_stride, 
-                       dst_nv12.data + i * width, 
-                       width);
+                        dst_nv12.data + i * width, 
+                        width);
             }
 
             // 复制UV平面数据

@@ -81,7 +81,7 @@ RgaSURF_FORMAT MediaRgaFmtTranslation(MEDIA_FORMAT_TYPE_E eType)
 
 MEDIA_FORMAT_TYPE_E MediaForccFrame(char * strFormate)
 {
-   if(!strcmp(strFormate,"NV12")){
+	if(!strcmp(strFormate,"NV12")){
 		return MEDIA_FORMAT_YUV420SP;
 	}
 	return MEDIA_FORMAT_MAX;

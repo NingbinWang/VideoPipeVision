@@ -10,13 +10,13 @@ RKrga *mediarga = nullptr;
 
 int MediaAi_Init(unsigned char *model_data,int model_data_size,const char *labels_nale_txt_path)
 {
-     npu_ctx = (RknnConText_T*)malloc(sizeof(RknnConText_T));
-     memset(npu_ctx, 0, sizeof(RknnConText_T));
-     npu = Media_GetRknpu();
-     npu->Init_Model(model_data,model_data_size,npu_ctx);
-     mediarga = Media_GetRkrga();
-     init_post_process(labels_nale_txt_path);
-     return 0;
+    npu_ctx = (RknnConText_T*)malloc(sizeof(RknnConText_T));
+    memset(npu_ctx, 0, sizeof(RknnConText_T));
+    npu = Media_GetRknpu();
+    npu->Init_Model(model_data,model_data_size,npu_ctx);
+    mediarga = Media_GetRkrga();
+    init_post_process(labels_nale_txt_path);
+    return 0;
 }
 
 

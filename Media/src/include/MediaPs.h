@@ -6,7 +6,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
 
 /******************************************************************************
 * 宏声明
@@ -17,10 +17,8 @@ extern "C" {
 #define PES_VIDEO_BASE          0xe0
 #define PES_AUDIO_BASE          0xc0
 #define PES_PRIVT_BASE          0xdb
-	
 #define MAX_PES_PACKET_LEN      65496
 #define MIN_PES_HEAD_STUFF_LEN	2
-	
 #define PS_PRIVATE_HEAD_LEN     12 
 
 
@@ -33,7 +31,6 @@ extern "C" {
 * 结构体声明
 ******************************************************************************/
 
-	
 typedef struct
 {
 	unsigned int	uStreamid;

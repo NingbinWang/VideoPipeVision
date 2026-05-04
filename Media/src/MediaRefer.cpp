@@ -34,9 +34,9 @@ unsigned int MediaRefer_fill_basic_descriptor(unsigned char *buffer, MEDIAREFER_
 
 
 unsigned int MediaRefer_fill_stream_descriptor(unsigned char *buffer, 
-										  unsigned int video_stream_type,
-										  unsigned int audio_stream_type,
-										  unsigned int video_frame_num)
+										    unsigned int video_stream_type,
+										    unsigned int audio_stream_type,
+										    unsigned int video_frame_num)
 {
     buffer[0]	= STREAM_DESCRIPTOR_TAG;			//  descriptor_tag: 0x45
     buffer[1]	= STREAM_DESCRIPTOR_LEN - 2;		//  descriptor_length;  

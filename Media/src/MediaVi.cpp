@@ -17,8 +17,8 @@ mpParams(pParams)
         mpCapture = V4l2Capture::create(param,V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
         if (mpCapture == NULL)
         {
-             LOG_WARNING("Cannot reading from V4L2 capture interface for device:%s\n",mpParams->strDevname);
-             return;
+            LOG_WARNING("Cannot reading from V4L2 capture interface for device:%s\n",mpParams->strDevname);
+            return;
         }
         LOG_DEBUG("V4L2 capture OK! device:%s\n",mpParams->strDevname);
 	}

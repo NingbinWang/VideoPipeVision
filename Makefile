@@ -14,8 +14,24 @@ OUTPUT_DIR= $(CURDIR)/output
 
 # media view
 #tsp config
+#TARGET_MEDIA = mpp
+#TARGET_SOC = rk3566
+#TARGET_OPENCV = y
+#TARGET_ROCKCHIP = y
+#TARGET_ROCKCHIP_FFMPEG = y
+#TARGET_V4L2 = y
+#TARGET_AUDIO = y
+#TARGET_LVGL = y
+#TARGET_LVGL_DEMO = n
+#TARGET_AI = y
+# cross host
+TARGET_CROSS_HOST = $(ROOT_PATH)/../prebuilts/gcc/linux-x86/aarch64/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu//bin/aarch64-linux-gnu
+#TARGET_CROSS_HOST = $(ROOT_PATH)/../prebuilts/gcc/linux-x86/aarch64/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu/bin/aarch64-rockchip-linux-gnu
+#tsp end
+
+#lubanmav3
 TARGET_MEDIA = mpp
-TARGET_SOC = rk3566
+TARGET_SOC = rk3576
 TARGET_OPENCV = y
 TARGET_ROCKCHIP = y
 TARGET_ROCKCHIP_FFMPEG = y
@@ -23,21 +39,7 @@ TARGET_V4L2 = y
 TARGET_AUDIO = y
 TARGET_LVGL = y
 TARGET_LVGL_DEMO = n
-TARGET_AI = y
-# cross host
-TARGET_CROSS_HOST = $(ROOT_PATH)/../prebuilts/gcc/linux-x86/aarch64/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu//bin/aarch64-linux-gnu
-#TARGET_CROSS_HOST = $(ROOT_PATH)/../prebuilts/gcc/linux-x86/aarch64/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu/bin/aarch64-rockchip-linux-gnu
-#tsp end
-
-#lubanmav3
-#TARGET_MEDIA = mpp
-#TARGET_SOC = rk3576
-#TARGET_OPENCV = y
-#TARGET_ROCKCHIP = y
-#TARGET_ROCKCHIP_FFMPEG = y
-#TARGET_V4L2 = y
-#TARGET_ALSA = n
-#TARGET_CROSS_HOST = $(ROOT_PATH)/../prebuilts/gcc/linux-x86/aarch64/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu
+TARGET_CROSS_HOST = $(ROOT_PATH)/../prebuilts/gcc/linux-x86/aarch64/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu
 include $(ROOT_PATH)/Config/Target.mk
 export SOC     := $(TARGET_SOC)
 export MEDIATYPE   := $(TARGET_MEDIA)

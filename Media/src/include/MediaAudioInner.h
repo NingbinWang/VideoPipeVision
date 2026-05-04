@@ -4,8 +4,10 @@
 #include "Logger.h"
 #include "Common.h"
 #include "MediaAudio.h"
+#ifdef USE_AUDIO
 #include <alsa/asoundlib.h>
 #include <fdk-aac/aacenc_lib.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,10 +27,12 @@ public:
 	INT32 MediaAudioStartThread(VOID);
 	
 private:
+#ifdef USE_AUDIO
 	snd_pcm_t *mpPcmhandle;
     snd_pcm_hw_params_t *mpPcmParams;
 	snd_pcm_uframes_t mFrameSize;
 	HANDLE_AACENCODER mAacEncoder;
+#endif
 	UINT32       muChan;
 	AUDIO_CFG_PARAM_T* mpParams;
 	INT16 *pPcmBuffer;
