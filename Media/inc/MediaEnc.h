@@ -57,7 +57,7 @@ typedef enum
 typedef struct 
 {
     BOOL       bEnable;                               /*是否打开*/
-   	UINT32	   encW;			 /*编码宽高*/
+    UINT32	   encW;			 /*编码宽高*/
 	UINT32	   encH;			 /*编码宽高*/
 	UINT32	   viLostFrm; 	 /*采集丢帧数目累加*/
     UINT       uEncfps;                               /*实时帧率*/
@@ -114,23 +114,23 @@ typedef struct
 
 typedef struct 
 {
-   BOOL                   bStart;          /*通道使能*/
-   MEDIA_ENC_CODETYPE_E   uEncType;        /*编码格式*/
-   UINT                   uEncW;           /*编码宽*/
-   UINT                   uEncH;           /*编码高*/
-   UINT   uEncFps;         /*编码帧率*/
-   UINT   uEncBps;         /*编码码率*/
-   UINT   uEncBpsType;     /*编码码率控制方式*/
-   UINT   uEncGop;         /*编码I帧间隔*/
-   UINT   uEncFrm;         /*编码帧数*/
-   UINT   uEncLostFrm;     /*编码丢帧数目累加*/
-   UINT   uaEncType;        /*音频编码格式*/
-   UINT   uaEncFrm;         /*音频编码帧数*/
-   UINT   uaEncLostFrm;     /*音频编码丢帧数目累加*/
-   UINT   uaEncDenoise;     /*音频降噪*/
-   UINT   packType;        /*封装流类型*/
-   UINT   dropMode;        /*覆盖方式*/
-   UINT   stremType;       /*媒体流类型*/
+    BOOL                   bStart;          /*通道使能*/
+    MEDIA_ENC_CODETYPE_E   uEncType;        /*编码格式*/
+    UINT                   uEncW;           /*编码宽*/
+    UINT                   uEncH;           /*编码高*/
+    UINT   uEncFps;         /*编码帧率*/
+    UINT   uEncBps;         /*编码码率*/
+    UINT   uEncBpsType;     /*编码码率控制方式*/
+    UINT   uEncGop;         /*编码I帧间隔*/
+    UINT   uEncFrm;         /*编码帧数*/
+    UINT   uEncLostFrm;     /*编码丢帧数目累加*/
+    UINT   uaEncType;        /*音频编码格式*/
+    UINT   uaEncFrm;         /*音频编码帧数*/
+    UINT   uaEncLostFrm;     /*音频编码丢帧数目累加*/
+    UINT   uaEncDenoise;     /*音频降噪*/
+    UINT   packType;        /*封装流类型*/
+    UINT   dropMode;        /*覆盖方式*/
+    UINT   stremType;       /*媒体流类型*/
 }MEDIA_ENC_STATUS_T;
 
 

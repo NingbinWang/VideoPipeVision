@@ -40,9 +40,9 @@ UsageEnvironment* env = NULL;
 void* AppRtspServerFun(void* UserData)
 {
 	/*Handle LVGL tasks*/
-	  while(1) {
-		  env->scheduler()->loop();
-	  }
+    while(1) {
+        env->scheduler()->loop();
+    }
 }
 
 INT32 AppRtspServer(const char* strIp)
@@ -86,13 +86,13 @@ static int sys_core_dump_open(char *pCorePid, char *pCorePath)
 
     do{
         /* 1, set core ulimit */
-     	if (getrlimit(RLIMIT_CORE, &limit))
+        if (getrlimit(RLIMIT_CORE, &limit))
         {
             LOG_ERROR("get resource limit fail!\n");
-     		break;
-     	}
-     	limit_set.rlim_cur = limit_set.rlim_max = RLIM_INFINITY;
-     	if (setrlimit(RLIMIT_CORE, &limit_set))
+            break;
+        }
+        limit_set.rlim_cur = limit_set.rlim_max = RLIM_INFINITY;
+        if (setrlimit(RLIMIT_CORE, &limit_set))
         {
 			limit_set.rlim_cur = limit_set.rlim_max = limit.rlim_max;
 			if (limit.rlim_max != RLIM_INFINITY)
@@ -105,7 +105,7 @@ static int sys_core_dump_open(char *pCorePid, char *pCorePath)
 				LOG_ERROR("set core ulimited fail!\n");
 				break;
 			}
-     	}
+        }
         /* 2, set core use pid */
         if (pCorePid && strlen(pCorePid) > 0)
         {
@@ -177,24 +177,23 @@ static void set_core_dump_enable(void)
 
 int app_main(void)
 {
-  
    //Logger::setLogFile("xxx.log");
-   pthread_t id;
-   Logger::setLogLevel(Logger::LogDebug);
+    pthread_t id;
+    Logger::setLogLevel(Logger::LogDebug);
 #ifdef USE_AI
    //AiModelInit();
 #endif
 	MediaManagerInit();
 #ifdef USE_LVGL
-   LvThreadInit();
+    LvThreadInit();
 #endif
 	set_core_dump_enable();
 	SysTime_sleep_ms(500);
-	AppRtspServer("192.168.0.14");
+	AppRtspServer("192.168.0.21");
 	pthread_create(&id,NULL,AppRtspServerFun,NULL);
 	while(1)
 	{
-	  SysTime_sleep_ms(100);
+        SysTime_sleep_ms(100);
 	}
-   return 0;
+    return 0;
 }

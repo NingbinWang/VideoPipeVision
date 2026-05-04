@@ -15,15 +15,15 @@ extern "C" {
  *  Provides some info about the encoder configuration.
  */
 typedef struct {
-  UINT maxOutBufBytes;
-  UINT maxAncBytes; 
-  UINT inBufFillLevel; 
-  UINT inputChannels;
-  UINT frameLength; 
-  UINT nDelay; 
-  UINT nDelayCore; 
-  UINT8 confBuf[64];
-  UINT confSize; 
+    UINT maxOutBufBytes;
+    UINT maxAncBytes; 
+    UINT inBufFillLevel; 
+    UINT inputChannels;
+    UINT frameLength; 
+    UINT nDelay; 
+    UINT nDelayCore; 
+    UINT8 confBuf[64];
+    UINT confSize; 
 } AACENC_INFO_T;
 
 

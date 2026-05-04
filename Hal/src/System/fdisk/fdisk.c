@@ -143,8 +143,8 @@ ISC UNIX) */
 	{0xfb, N_("VMware VMFS")},
 	{0xfc, N_("VMware VMKCORE")},	/* VMware kernel dump partition */
 	{0xfd, N_("Linux raid autodetect")},/* New (2.2.x) raid partition with
-					       autodetect using persistent
-					       superblock */
+							autodetect using persistent
+							superblock */
 	{0xfe, N_("LANstep")},		/* SpeedStor >1024 cyl. or LANstep */
 	{0xff, N_("BBT")},		/* Xenix Bad Block Table */
 	{ 0, 0 }
@@ -713,8 +713,8 @@ delete_partition(int i)
 
 			if (pe->part_table) /* prevent SEGFAULT */
 				set_start_sect(pe->part_table,
-					       get_partition_start(pe) -
-					       extended_offset);
+							get_partition_start(pe) -
+							extended_offset);
 			pe->offset = extended_offset;
 			pe->changed = 1;
 		}
@@ -763,14 +763,14 @@ read_extended(int fd, int ext)
 		if (partitions >= MAXIMUM_PARTS)
 		{
 			/* This is not a Linux restriction, but
-			   this program uses arrays of size MAXIMUM_PARTS.
+				this program uses arrays of size MAXIMUM_PARTS.
 			   Do not try to `improve' this test. */
 			struct pte *pre = &ptes[partitions-1];
 
 			fprintf(stderr,
 				_("Warning: omitting partitions after #%d.\n"
-				  "They will be deleted "
-				  "if you save this partition table.\n"),
+					"They will be deleted "
+					"if you save this partition table.\n"),
 				partitions);
 			clear_partition(pre->ext_pointer);
 			pre->changed = 1;
@@ -856,7 +856,7 @@ read_extended(int fd, int ext)
 		struct pte *pe = &ptes[i];
 
 		if (!get_nr_sects(pe->part_table) &&
-		    (partitions > 5 || ptes[4].part_table->sys_ind))
+			(partitions > 5 || ptes[4].part_table->sys_ind))
 		{
 			printf("omitting empty partition (%d)\n", i+1);
 			delete_partition(i);
@@ -979,7 +979,7 @@ get_geometry(int fd, struct geom *g)
 	heads = pt_heads ? pt_heads :
 		kern_heads ? kern_heads : 255;
 	sectors = pt_sectors ? pt_sectors :
-		  kern_sectors ? kern_sectors : 63;
+		kern_sectors ? kern_sectors : 63;
 
 	if (blkdev_get_sectors(fd, &llsectors) == -1)
 	{
@@ -1155,8 +1155,8 @@ int
 is_cleared_partition(struct partition *p)
 {
 	return !(!p || p->boot_ind || p->head || p->sector || p->cyl ||
-		 p->sys_ind || p->end_head || p->end_sector || p->end_cyl ||
-		 get_start_sect(p) || get_nr_sects(p));
+		p->sys_ind || p->end_head || p->end_sector || p->end_cyl ||
+		get_start_sect(p) || get_nr_sects(p));
 }
 
 /* Function: freeLogicalPtes
@@ -1200,7 +1200,7 @@ get_disk_info(DEVICE_INFO *devInfo)
 	if (is_garbage_table())
 	{
 		printf(_("This doesn't look like a partition table\n"
-			 "Probably you selected the wrong device.\n\n"));
+			"Probably you selected the wrong device.\n\n"));
 	}
 
 	FDISK_INFO("get_disk_info: partitions = %d\n", partitions);
@@ -1447,13 +1447,13 @@ addPartition(int n, int sys, unsigned long long partCyls, int bPartAligned/* nee
 	/*chenxc add, supporting partion align*/
 	if(1 == bPartAligned)
 	{
-	    if(0 == n)
-	    {
+		if(0 == n)
+		{
             /* 第一个分区默认从2048开始，预留头 */
             start = 2048;
             sector_offset = start;
-	    }
-	    stop -= 1;
+		}
+		stop -= 1;
 	}
 
 	printf("Disk Part %d, start %llu, stop %llu\n", n, start, stop);
@@ -1602,8 +1602,8 @@ try2parse(const char *device, DEVICE_INFO *devInfo)
 	else
 	{
 		/* Ignore other errors, since we try IDE
-		   and SCSI hard disks which may not be
-		   installed on the system. */
+			and SCSI hard disks which may not be
+		   	installed on the system. */
 		if (errno == EACCES)
 		{
 			fprintf(stderr, _("Cannot open %s\n"), device);
@@ -2062,4 +2062,3 @@ int fdisk_get_dev_node_partition_num(const char *device_path,  unsigned int *num
     *num = partition_count;
     return 0;
 }
-

@@ -20,13 +20,15 @@ VideoMediaSource::VideoMediaSource(UsageEnvironment* env) :
     mEnv(env)
     
 {
-   this->mOutputbuf = (char *)SysMemory_malloc(VIDEOBUFFERSIZE);
-   if(this->mOutputbuf == NULL){
+    this->mOutputbuf = (char *)SysMemory_malloc(VIDEOBUFFERSIZE);
+    if(this->mOutputbuf == NULL){
 		LOG_ERROR("NO MEM\n");
-   }
-   setFps(30);
-   for(int i = 0; i < DEFAULT_FRAME_NUM; ++i)
-       mEnv->threadPool()->addTask(mTask);
+    }
+    setFps(30);
+    for(int i = 0; i < DEFAULT_FRAME_NUM; ++i)
+    {
+        mEnv->threadPool()->addTask(mTask);
+    }
     LOG_DEBUG("VideoMediaSource OK\n");
 }
 
@@ -53,20 +55,19 @@ void VideoMediaSource::readFrame()
     if(mAvFrameInputQueue.empty())
         return;
     AvFrame* frame = mAvFrameInputQueue.front();
-   
     if(mNaluQueue.empty())
     {
-    	while(1)
+        while(1)
 		{
 			size = GetEncStream(0,this->mOutputbuf);
 			if(size == 0)
 			{
-			 LOG_INFO("don't have one framebuf\n");
-			 SysTime_sleep_ms(33);
-             continue;
+                LOG_INFO("don't have one framebuf\n");
+                SysTime_sleep_ms(33);
+                continue;
 			}
 			break;
-    	}
+        }
 		framebuf = (char *)SysMemory_malloc(size);
         memcpy(framebuf, this->mOutputbuf, size);
         memset(this->mOutputbuf,0,size);

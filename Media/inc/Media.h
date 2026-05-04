@@ -48,9 +48,9 @@ typedef struct
     //编码共享区
 	ENC_SHARE_BUF_T                    aEncPool[MAX_ENC_CHAN_SOC];
 	/*
-     1）若recPool[0].bufLen==0, 为每个缓冲区分配一个默认大小的缓冲；
-     2）若recPool[0].bufLen!=0, 所有缓冲区都按照应用指定的大小分配
-     3）总的大小不要超过32MB
+    1）若recPool[0].bufLen==0, 为每个缓冲区分配一个默认大小的缓冲；
+    2）若recPool[0].bufLen!=0, 所有缓冲区都按照应用指定的大小分配
+    3）总的大小不要超过32MB
      */
     REC_POOL_INFO_T                    astRecPool[MAX_ENC_CHAN_SOC + MAX_USB_CHAN_SOC];
     AUDIO_CFG_PARAM_T                  stAudioCfgParam;  // 音频初始化参数
@@ -62,7 +62,7 @@ typedef struct
     BOOL                               bOSD;//osd开关
     //LOGO
 	UINT8                              u8logoAddr[OSD_LOGO_LEN]; //logo图像
-     /*图片回放下载码流*/
+    /*图片回放下载码流*/
     DEC_SHARE_BUF_T                    jpegDecShareBuf[MAX_DEC_CHAN_SOC];/*jpeg回放下载地址*/
      /* 音频回放共享缓冲区地址 */
     DEC_SHARE_BUF_T                    audioDecShareBuf[MAX_DEC_CHAN_SOC];/*音频回放下载地址*/

@@ -29,14 +29,13 @@ AudioMediaSource::AudioMediaSource(UsageEnvironment* env) :
     mEnv(env)
     
 {
-   this->mOutputbuf = (char *)SysMemory_malloc(VIDEOBUFFERSIZE);
-   if(this->mOutputbuf == NULL){
+    this->mOutputbuf = (char *)SysMemory_malloc(VIDEOBUFFERSIZE);
+    if(this->mOutputbuf == NULL){
 		LOG_ERROR("NO MEM\n");
-   }
-   setFps(30);
-   for(int i = 0; i < DEFAULT_FRAME_NUM; ++i)
-       mEnv->threadPool()->addTask(mTask);
-       mEnv->threadPool()->addTask(mTask);
+    }
+    for(int i = 0; i < DEFAULT_FRAME_NUM; ++i)
+        mEnv->threadPool()->addTask(mTask);
+        mEnv->threadPool()->addTask(mTask);
     LOG_DEBUG("AudioMediaSource OK\n");
 }
 
@@ -58,9 +57,9 @@ void AudioMediaSource::readFrame()
 		size = GetAudioStream(this->mOutputbuf);
 		if(size == 0)
 		{
-			 LOG_INFO("don't have one framebuf\n");
-			 SysTime_sleep_ms(33);
-             continue;
+            LOG_INFO("don't have one framebuf\n");
+            SysTime_sleep_ms(33);
+            continue;
 		}
 		break;
     }

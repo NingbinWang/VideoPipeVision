@@ -19,7 +19,7 @@ int blkdev_get_size(int fd, unsigned long long *bytes)
 
 	/* kernels 2.4.15-2.4.17, had a broken BLKGETSIZE64 */
 	if (ver >= KERNEL_VERSION (2,6,0) ||
-	   (ver >= KERNEL_VERSION (2,4,18) && ver < KERNEL_VERSION (2,5,0))) 
+		(ver >= KERNEL_VERSION (2,4,18) && ver < KERNEL_VERSION (2,5,0))) 
 	{
 
 		if (ioctl(fd, BLKGETSIZE64, bytes) >= 0)

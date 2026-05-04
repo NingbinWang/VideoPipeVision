@@ -24,15 +24,15 @@ int MediaManagerInit()
 	pManagerParm->astViCfgParam[0].u32Image_viW = 1920;
 	pManagerParm->astViCfgParam[0].u32Image_viH = 1080;
 	pManagerParm->astViCfgParam[0].u32Frame_rate = 30;
-	pManagerParm->astViCfgParam[0].eSensorType = CMOS_OV_5969;
+	pManagerParm->astViCfgParam[0].eSensorType = CMOS_OV_8858;
 	pManagerParm->astViCfgParam[0].u32Frame_rate = 30;
 
 	strcpy(pManagerParm->astViCfgParam[0].strDevname,MAINDEVNAME);
     if(pManagerParm->astViCfgParam[0].eViType == VI_V4L2)
     {
-    	if(strlen(MAINFORMAT) != 4){
+		if(strlen(MAINFORMAT) != 4){
 			LOG_ERROR("set in formate %s is not right length!\n",MAINFORMAT);
-    	}
+		}
     }
 	strcpy(pManagerParm->astViCfgParam[0].strFormat,MAINFORMAT);
 	for(uIndex = 0;uIndex < pManagerParm->u32ViChanCnt;uIndex++){
@@ -117,7 +117,6 @@ MEDIA_PARAM_T * MediaManagerGet()
 
 unsigned int  GetDecStream(unsigned int uChan,void *pUserData,INT32 iDrop)
 {
-   
     UINT uLen1 = 0;
 	UINT uLen2 = 0;
 	UINT uCurLen=0;
@@ -146,8 +145,9 @@ unsigned int  GetDecStream(unsigned int uChan,void *pUserData,INT32 iDrop)
         pPool=&(pManagerParm->aDecPool[uChan]);
 		if(pPool == NULL)
 		{
-		   LOG_ERROR("NO RAWPOOL!\n");
-		   return 0;
+			LOG_ERROR("NO RAWPOOL!\n");
+			SysMutex_unlock(pMutex);
+			return 0;
 		}
         uW=pPool->wIdx;
 		if(!iDrop)
@@ -234,8 +234,9 @@ unsigned int  GetEncStream(unsigned int uChan,void *pUserData)
         pPool=&(pManagerParm->aEncPool[uChan]);
 		if(pPool == NULL)
 		{
-		   LOG_ERROR("NO RAWPOOL!\n");
-		   return 0;
+			LOG_ERROR("NO RAWPOOL!\n");
+			SysMutex_unlock(pMutex);
+			return 0;
 		}
         uW=pPool->wIdx;
 		uR=pPool->rIdx;
@@ -244,21 +245,21 @@ unsigned int  GetEncStream(unsigned int uChan,void *pUserData)
         {
                 uLen1 = uW - uR;
                 uLen2 = 0;
-         }
-         else
-         {
+        }
+        else
+        {
                 uLen1 = pPool->totalLen - uR;
                 uLen2 = uW;
-         }
-         uCurLen = uLen1+uLen2;
-         if(uCurLen < uFrameHeaderSize)
-         {
-               LOG_INFO("uCurLen too small uCurLen = %d uFrameHeaderSize = %d\n",uCurLen,uFrameHeaderSize);
-         	   SysMutex_unlock(pMutex);
-               return 0;
-         }
-         if(uCurLen >= uFrameHeaderSize)
-         {          
+        }
+        uCurLen = uLen1+uLen2;
+        if(uCurLen < uFrameHeaderSize)
+        {
+				LOG_INFO("uCurLen too small uCurLen = %d uFrameHeaderSize = %d\n",uCurLen,uFrameHeaderSize);
+				SysMutex_unlock(pMutex);
+				return 0;
+        }
+        if(uCurLen >= uFrameHeaderSize)
+        {          
                 if((void*)pPool->addr[0] == NULL)
                 {
                     LOG_ERROR("[chan%d] invalid addr[0] !\n",uChan);
@@ -278,10 +279,10 @@ unsigned int  GetEncStream(unsigned int uChan,void *pUserData)
 				uFrameSize = pFrame->stImageFrame.sSize + uFrameHeaderSize;
 				LOG_INFO("frame size:%d all：%d H:%d w:%d\n",uSize,uFrameSize,pFrame->stVideoHeader.u32ImageHeight,pFrame->stVideoHeader.u32ImageWidth);
 				if(uCurLen < uFrameSize){
-					 SysMemory_free(pData);
-					 LOG_INFO("uCurLen too small uCurLen = %d uFrameSize = %d\n",uCurLen,uFrameSize);
-         	   		 SysMutex_unlock(pMutex);
-               		 return 0;
+					SysMemory_free(pData);
+					LOG_INFO("uCurLen too small uCurLen = %d uFrameSize = %d\n",uCurLen,uFrameSize);
+					SysMutex_unlock(pMutex);
+					return 0;
 				}
 				SysMemory_free(pData);
 				pData = SysMemory_malloc(uFrameSize);
@@ -304,7 +305,6 @@ unsigned int  GetEncStream(unsigned int uChan,void *pUserData)
 
 unsigned int  GetAudioStream(void *pUserData)
 {
-   
     UINT uLen1 = 0;
 	UINT uLen2 = 0;
 	UINT uCurLen=0;
@@ -334,8 +334,9 @@ unsigned int  GetAudioStream(void *pUserData)
         pPool=&(pManagerParm->stAudioPool);
 		if(pPool == NULL)
 		{
-		   LOG_ERROR("NO RAWPOOL!\n");
-		   return 0;
+			LOG_ERROR("NO RAWPOOL!\n");
+			SysMutex_unlock(pMutex);
+			return 0;
 		}
         uW=pPool->wIdx;
 		uR=pPool->rIdx;
@@ -344,21 +345,21 @@ unsigned int  GetAudioStream(void *pUserData)
         {
                 uLen1 = uW - uR;
                 uLen2 = 0;
-         }
-         else
-         {
+        }
+        else
+        {
                 uLen1 = pPool->totalLen - uR;
                 uLen2 = uW;
-         }
-         uCurLen = uLen1+uLen2;
-         if(uCurLen < uFrameHeaderSize)
-         {
-               LOG_INFO("uCurLen too small uCurLen = %d uFrameHeaderSize = %d\n",uCurLen,uFrameHeaderSize);
-         	   SysMutex_unlock(pMutex);
-               return 0;
-         }
-         if(uCurLen >= uFrameHeaderSize)
-         {          
+        }
+        uCurLen = uLen1+uLen2;
+        if(uCurLen < uFrameHeaderSize)
+        {
+                LOG_INFO("uCurLen too small uCurLen = %d uFrameHeaderSize = %d\n",uCurLen,uFrameHeaderSize);
+				SysMutex_unlock(pMutex);
+                return 0;
+        }
+        if(uCurLen >= uFrameHeaderSize)
+        {          
                 if((void*)pPool->addr[0] == NULL)
                 {
                     LOG_ERROR("invalid addr[0] !\n");
@@ -377,10 +378,10 @@ unsigned int  GetAudioStream(void *pUserData)
 				uSize = pFrame->iFrameLen;
 				uFrameSize = pFrame->iFrameLen + uFrameHeaderSize;
 				if(uCurLen < uFrameSize){
-					 SysMemory_free(pData);
-					 LOG_INFO("uCurLen too small uCurLen = %d uFrameSize = %d\n",uCurLen,uFrameSize);
-         	   		 SysMutex_unlock(pMutex);
-               		 return 0;
+					SysMemory_free(pData);
+					LOG_INFO("uCurLen too small uCurLen = %d uFrameSize = %d\n",uCurLen,uFrameSize);
+					SysMutex_unlock(pMutex);
+					return 0;
 				}
 				SysMemory_free(pData);
 				pData = SysMemory_malloc(uFrameSize);

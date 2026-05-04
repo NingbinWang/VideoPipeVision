@@ -53,7 +53,7 @@ INT32 SysNet_set_ip(const CHAR *strDevName, INT32 iDomain, const CHAR *strIP)
 
     memcpy(&stIfreq.ifr_ifru.ifru_addr, &stIPaddr, sizeof(struct sockaddr_in));
     if(ioctl(iFd, SIOCSIFADDR, &stIfreq) < 0)
-   	{
+    {
 		LOG_ERROR("IP_set ioctl failed. error: %s!\n", strerror(errno));
 		close(iFd);
 		return ERROR;
@@ -102,14 +102,14 @@ INT32 SysNet_get_ip(const CHAR* strEthName, INT32 iDomain, CHAR *strIpAddr, UINT
 		while (fscanf(pFileId, "%4s%4s%4s%4s%4s%4s%4s%4s %02x %02x %02x %02x %20s\n",
 			strIpV6[0], strIpV6[1], strIpV6[2], strIpV6[3],
 			strIpV6[4], strIpV6[5], strIpV6[6], strIpV6[7],
-			 &iIndex, &iPrefix, &iScope, &iFlags, strDevName) != EOF) {
+                &iIndex, &iPrefix, &iScope, &iFlags, strDevName) != EOF) {
 			if (!strcmp(strDevName, strEthName))
             {
 				sprintf(strIpAddr, "%s:%s:%s:%s:%s:%s:%s:%s",
 					strIpV6[0], strIpV6[1], strIpV6[2], strIpV6[3],
 					strIpV6[4], strIpV6[5], strIpV6[6], strIpV6[7]);
 				fclose(pFileId);
-		        return OK;
+                return OK;
 			}
 		}	
 		fclose(pFileId);
