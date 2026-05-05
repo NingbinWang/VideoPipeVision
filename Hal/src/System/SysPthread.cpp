@@ -195,7 +195,6 @@ INT32 SysPthread_create_policy(TASK_ID *pStTid, CHAR *strTaskName, UINT32 uPrior
     }   
 
     thread_name = strTaskName ? strTaskName : "anonymous_thread";
-       
     thread = (SysThread_t*)SysObject_allocate (SYSOBJECT_CLASS_THREAD, thread_name);
     if (!thread) {
         LOG_ERROR ("Failed to allocate thread object\n");
@@ -256,7 +255,6 @@ INT32 SysPthread_create(TASK_ID *pStTid, CHAR *strTaskName, UINT32 uPriority, UI
     }
 
     thread_name = strTaskName ? strTaskName : "anonymous_thread";
-           
     thread = (SysThread_t*)SysObject_allocate (SYSOBJECT_CLASS_THREAD, thread_name);
     if (!thread) {
         LOG_ERROR ("Failed to allocate thread object\n");
@@ -316,7 +314,6 @@ INT32 SysPthread_create_leagcy_policy(TASK_ID *pStTid, CHAR *strTaskName, UINT32
     }   
 
     thread_name = strTaskName ? strTaskName : "anonymous_thread";
-           
     thread = (SysThread_t*)SysObject_allocate (SYSOBJECT_CLASS_THREAD, thread_name);
     if (!thread) {
         LOG_ERROR ("Failed to allocate thread object\n");
@@ -543,7 +540,6 @@ INT32 SysPthread_getaffinity(TASK_ID stTaskId, ULONG* uCpuset)
         if (CPU_ISSET(bit, &cpuset))
             *uCpuset |= BIT (bit);      
     }
- 
     return 0;
 }
 

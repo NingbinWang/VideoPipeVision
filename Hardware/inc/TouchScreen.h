@@ -55,7 +55,7 @@ private:
     TouchCallback multitouch_callback_;
     TouchPoint current_point_;
     std::map<int, TouchPoint> multi_touch_points_;
-	 int current_slot_ = 0;
+	int current_slot_ = 0;
 };
 
 #endif // TOUCH_SCREEN_H

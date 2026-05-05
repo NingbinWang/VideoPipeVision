@@ -282,7 +282,7 @@ INT32 SysPosix_cmd_call_safety(const CHAR *strCmd)
             LOG_ERROR("cmd run failed - exit code(%d)\n", iExitCode);
             return ERROR;
         }
-     } else if (WIFSIGNALED(iStatus)) {
+    } else if (WIFSIGNALED(iStatus)) {
         LOG_ERROR("Child process terminated by signal(%d)\n", WTERMSIG(iStatus));
         return ERROR;
     } else {

@@ -32,8 +32,11 @@
 #endif
 #include "MediaManager.h"
 #include <pthread.h>
+#ifdef USE_AUDIO
 #include "AudioMediaSource.h"
 #include "AACRtpSink.h"
+#endif
+#include "SysNet.h"
 
 UsageEnvironment* env = NULL;
 
@@ -56,11 +59,11 @@ INT32 AppRtspServer(const char* strIp)
     MediaSession* session = MediaSession::createNew("live");//创建一个session
     MediaSource* mediaSource = VideoMediaSource::createNew(env); 
     RtpSink* rtpSink = H264RtpSink::createNew(env, mediaSource);
-	//MediaSource* audioSource = AudioMediaSource::createNew(env);
-    //RtpSink* audioRtpSink = AACRtpSink::createNew(env, audioSource);
+	MediaSource* audioSource = AudioMediaSource::createNew(env);
+    RtpSink* audioRtpSink = AACRtpSink::createNew(env, audioSource);
     
     session->addRtpSink(MediaSession::TrackId0, rtpSink);
-    //session->addRtpSink(MediaSession::TrackId1, audioRtpSink);
+    session->addRtpSink(MediaSession::TrackId1, audioRtpSink);
     server->addMeidaSession(session);
     server->start();
     std::cout<<"Play the media using the URL \""<<server->getUrl(session)<<"\""<<std::endl;
@@ -179,6 +182,8 @@ int app_main(void)
 {
    //Logger::setLogFile("xxx.log");
     pthread_t id;
+    CHAR IP[256] = {0};
+    SysNet_get_ip("eth0", AF_INET, IP, 256);
     Logger::setLogLevel(Logger::LogDebug);
 #ifdef USE_AI
    //AiModelInit();
@@ -189,7 +194,7 @@ int app_main(void)
 #endif
 	set_core_dump_enable();
 	SysTime_sleep_ms(500);
-	AppRtspServer("192.168.0.21");
+	AppRtspServer(IP);
 	pthread_create(&id,NULL,AppRtspServerFun,NULL);
 	while(1)
 	{

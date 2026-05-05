@@ -21,7 +21,7 @@ typedef struct {
 
 #define NLA_DATA(nla)        ((void *)((char*)(nla) + NLA_HDRLEN))
 #define NLA_NEXT(nla, len) ((len) -= NLA_ALIGN((nla)->nla_len), \
-                       (struct nlattr*)((char*)(nla) + NLA_ALIGN((nla)->nla_len)))
+                        (struct nlattr*)((char*)(nla) + NLA_ALIGN((nla)->nla_len)))
 
 static INT32 genlnetlink_msg_check(GENCMSG_HEADER_T *pMsg, INT32 iReplen)
 {
@@ -44,8 +44,8 @@ static INT32 genlnetlink_msg_check(GENCMSG_HEADER_T *pMsg, INT32 iReplen)
 static INT32 nla_ok(const struct nlattr *pNla, INT32 iRemaining)
 {
     return iRemaining >= (INT32) sizeof(*pNla) &&
-           pNla->nla_len >= sizeof(*pNla) &&
-           pNla->nla_len <= iRemaining;
+            pNla->nla_len >= sizeof(*pNla) &&
+            pNla->nla_len <= iRemaining;
 }
 
 INT32 SysGenlNetlink_create_nl_socket(UINT32 uPid)

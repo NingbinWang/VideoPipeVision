@@ -328,10 +328,9 @@ INT32  MediaStream::SendStreamToRecPool(UINT32 uChan,PUINT8 pStreamSrc,UINT32 uL
         
         if(uLength > u32SpareLen)
         {
-             //mpParam->encStatus[chan].RecPoolFrmLost++;
-			 
-			 LOG_WARNING("chan[%d] RecPool is overflow w=%d r=%d len=%d totalLen=%d!\n",uChan,u32W,u32R,uLength,u32TotalLen);
-             return ERROR;
+            //mpParam->encStatus[chan].RecPoolFrmLost++;
+			LOG_WARNING("chan[%d] RecPool is overflow w=%d r=%d len=%d totalLen=%d!\n",uChan,u32W,u32R,uLength,u32TotalLen);
+            return ERROR;
         }
         
         u32Part1 = u32TotalLen - u32W;

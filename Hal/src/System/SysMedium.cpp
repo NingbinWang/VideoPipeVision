@@ -150,10 +150,9 @@ INT32 SysMedium_mount(const CHAR *strDevPath, SYS_MEDIUM_FS_TYPE_E eFsType, cons
     }
     else
     {
-         //noatime,async,codepage=936,iocharset=gb2312
+        //noatime,async,codepage=936,iocharset=gb2312
         iRet = mount(strDevPath, strMountPath, strFileSystem, MS_MGC_VAL | MS_NOATIME, strData);
     }
-   
     if(iRet != OK)
     {
         LOG_ERROR("mount %s %s :%s eFsType:%d failed, %s\n", strDevPath, strMountPath,strFileSystem,eFsType, strerror(errno));

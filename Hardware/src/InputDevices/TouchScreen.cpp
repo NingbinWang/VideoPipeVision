@@ -21,7 +21,7 @@ void TouchScreen::onAbsEvent(const input_event& ev) {
             current_slot_ = ev.value;
             break;
         case ABS_MT_TRACKING_ID:
-		  if (current_slot_ >= 0 && current_slot_ < 10) {
+		    if (current_slot_ >= 0 && current_slot_ < 10) {
                     multi_touch_points_[current_slot_].tracking_id = ev.value;
                     multi_touch_points_[current_slot_].valid = (ev.value != -1);
                     
@@ -47,17 +47,17 @@ void TouchScreen::onAbsEvent(const input_event& ev) {
                 }
             break;
         case ABS_MT_POSITION_X:
-			 if (current_slot_ >= 0 && current_slot_ < 10) {
+			if (current_slot_ >= 0 && current_slot_ < 10) {
                     multi_touch_points_[current_slot_].x = ev.value;
                     // 如果当前没有活动触摸，将第一个触摸点设为活动
                     if (!current_point_.valid) {
                         current_point_.x = ev.value;
                         current_point_.valid = true;
                     }
-             }
+            }
             break;
         case ABS_MT_POSITION_Y:
-             if (current_slot_ >= 0 && current_slot_ < 10) {
+            if (current_slot_ >= 0 && current_slot_ < 10) {
                     multi_touch_points_[current_slot_].y = ev.value;
                     // 如果当前没有活动触摸，将第一个触摸点设为活动
                     if (!current_point_.valid) {
@@ -72,7 +72,7 @@ void TouchScreen::onAbsEvent(const input_event& ev) {
 }
 
 void TouchScreen::onSynEvent(const input_event& ev) {
-     if (ev.code == SYN_REPORT) {
+    if (ev.code == SYN_REPORT) {
             std::lock_guard<std::mutex> lock(data_mutex_);
             
             // 如果有单点触摸回调，处理当前点
@@ -88,7 +88,7 @@ void TouchScreen::onSynEvent(const input_event& ev) {
                     }
                 }
             }
-     }
-	 LOG_INFO("touch: x=%d y=%d press=%d ID=%d\n",current_point_.x,current_point_.y,current_point_.pressure, current_point_.tracking_id);
+    }
+	LOG_INFO("touch: x=%d y=%d press=%d ID=%d\n",current_point_.x,current_point_.y,current_point_.pressure, current_point_.tracking_id);
 }
 

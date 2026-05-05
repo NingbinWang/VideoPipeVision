@@ -28,18 +28,16 @@ typedef struct {
  * 最后将得到的16位数据取反即为 icmp报文校验和
  */
 static UINT16 icmp_checksum(UINT16 *pData, INT32 iLen)
- {
-     UINT32 uSum = 0;
+{
+    UINT32 uSum = 0;
 
-     while (iLen > 1) {
-         uSum += *pData++;
-         iLen -= 2;
-     }
- 
-     uSum = (uSum >> 16) + (uSum & 0xffff);
-     uSum += (uSum >> 16);
- 
-     return (UINT16)~uSum;
+    while (iLen > 1) {
+        uSum += *pData++;
+        iLen -= 2;
+    }
+    uSum = (uSum >> 16) + (uSum & 0xffff);
+    uSum += (uSum >> 16);
+    return (UINT16)~uSum;
 }
 
 static INT32 icmp_msg_recv(INT32 iSockFd, VOID *pBuffer, UINT32 uLen, UINT32 uWaitTime)
@@ -71,19 +69,18 @@ static INT32 icmp_msg_recv(INT32 iSockFd, VOID *pBuffer, UINT32 uLen, UINT32 uWa
     }
 
     iRet = select(iSockFd + 1, &stReadSets, NULL, &stErrSets, pWaitTime);
-     if (iRet > 0 && FD_ISSET(iSockFd, &stReadSets))
-     {
-         iRet = recv(iSockFd, pBuffer, uLen, 0);
-         if (iRet < 0) {
-             LOG_ERROR ("recv failed, ret(%d) errno[%d]: %s\n", iRet, errno, strerror(errno));
-             return -errno;
-         }
-     } else {
+    if (iRet > 0 && FD_ISSET(iSockFd, &stReadSets))
+    {
+        iRet = recv(iSockFd, pBuffer, uLen, 0);
+        if (iRet < 0) {
+            LOG_ERROR ("recv failed, ret(%d) errno[%d]: %s\n", iRet, errno, strerror(errno));
+            return -errno;
+        }
+    } else {
         LOG_ERROR ("select failed, ret(%d) errno[%d]: %s\n", iRet, errno, strerror(errno));
         return -errno;
-     }
-
-     return 0;
+    }
+    return 0;
 }
 /* @fn              SysNet_ping
  * @brief           ping对端地址是否连通
@@ -221,11 +218,11 @@ INT32 SysNet_ping(CHAR *pDstIpAddr, UINT32 *pTimeout, UINT32 *pTtl)
     *pTimeout = ((&stRecvtime)->tv_sec-pSendtime->tv_sec)*1000000 + ((&stRecvtime)->tv_usec-pSendtime->tv_usec);
     *pTtl = stIcmpPingMsg.stIpHdr.ttl;
     LOG_DEBUG ("%d bytes from %s:icmp_seq=%u ttl=%d rtt=%.3f ms\n",
-           ntohs(stIcmpPingMsg.stIpHdr.tot_len) - (stIcmpPingMsg.stIpHdr.ihl << 2),
-           strDestAddr,
-           stIcmpPingMsg.stIcmpHdr.un.echo.sequence,
-           stIcmpPingMsg.stIpHdr.ttl,
-           (*pTimeout) / 1000.0);
+            ntohs(stIcmpPingMsg.stIpHdr.tot_len) - (stIcmpPingMsg.stIpHdr.ihl << 2),
+            strDestAddr,
+            stIcmpPingMsg.stIcmpHdr.un.echo.sequence,
+            stIcmpPingMsg.stIpHdr.ttl,
+            (*pTimeout) / 1000.0);
 
     close(iSockFd);
 

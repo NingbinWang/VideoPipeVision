@@ -34,7 +34,7 @@ public:
 
     ~RtpInstance()
     { 
-       SysSocket_close(mSockfd);
+        SysSocket_close(mSockfd);
     }
 
     uint16_t getLocalPort() const { return mLocalPort; }
@@ -65,25 +65,49 @@ public:
 private:
     int sendOverUdp(void* pBuf, int iLen)
     {
-        return SysSocket_send_to(mSockfd,pBuf,iLen, AF_INET, mDestAddr.getIp().c_str(),mDestAddr.getPort());
+        int result = SysSocket_send_to(mSockfd,pBuf,iLen, AF_INET, mDestAddr.getIp().c_str(),mDestAddr.getPort());
+        if (result < 0) {
+            // 发送失败，增加错误计数
+            mSendErrorCount++;
+            // 如果连续错误超过50次，标记为不存活
+            if (mSendErrorCount >= 50) {
+                mIsAlive = false;
+            }
+        } else {
+            // 发送成功，重置错误计数
+            mSendErrorCount = 0;
+        }
+        return result;
     }
 
     int sendOverTcp(void* pBuf, int iLen)
     {
-        return SysSocket_send(mSockfd,pBuf,iLen);
+        int result = SysSocket_send(mSockfd,pBuf,iLen);
+        if (result < 0) {
+            // 发送失败，增加错误计数
+            mSendErrorCount++;
+            // 如果连续错误超过50次，标记为不存活
+            if (mSendErrorCount >= 50) {
+                mIsAlive = false;
+            }
+        } else {
+            // 发送成功，重置错误计数
+            mSendErrorCount = 0;
+        }
+        return result;
     }
 
 public:
     RtpInstance(int localSockfd, uint16_t localPort, const std::string& destIp, uint16_t destPort) :
         mRtpType(RTP_OVER_UDP), mSockfd(localSockfd), mLocalPort(localPort),
-        mDestAddr(destIp, destPort), mIsAlive(false), mSessionId(0)
+        mDestAddr(destIp, destPort), mIsAlive(false), mSessionId(0), mSendErrorCount(0)
     {
         
     }
 
     RtpInstance(int clientSockfd, uint8_t rtpChannel) :
         mRtpType(RTP_OVER_TCP), mSockfd(clientSockfd), 
-        mIsAlive(false), mSessionId(0), mRtpChannel(rtpChannel)
+        mIsAlive(false), mSessionId(0), mRtpChannel(rtpChannel), mSendErrorCount(0)
     {
         
     }
@@ -96,6 +120,7 @@ private:
     bool mIsAlive;
     uint16_t mSessionId;
     uint8_t mRtpChannel; //for tcp
+    int mSendErrorCount; // 连续发送错误计数器
 };
 
 class RtcpInstance
@@ -110,12 +135,24 @@ public:
 
     ~RtcpInstance()
     {
-    	SysSocket_close(mLocalSockfd);
+        SysSocket_close(mLocalSockfd);
     }
 
     int send(void* buf, int size)
     {
-        return SysSocket_send_to(mLocalSockfd, buf, size,  AF_INET, mDestAddr.getIp().c_str(),mDestAddr.getPort());
+        int result = SysSocket_send_to(mLocalSockfd, buf, size,  AF_INET, mDestAddr.getIp().c_str(),mDestAddr.getPort());
+        if (result < 0) {
+            // 发送失败，增加错误计数
+            mSendErrorCount++;
+            // 如果连续错误超过50次，标记为不存活
+            if (mSendErrorCount >= 50) {
+                mIsAlive = false;
+            }
+        } else {
+            // 发送成功，重置错误计数
+            mSendErrorCount = 0;
+        }
+        return result;
     }
 
     int recv(void* buf, int size, Ipv4Address* addr)
@@ -134,7 +171,7 @@ public:
     RtcpInstance(int localSockfd, uint16_t localPort,
                     std::string destIp, uint16_t destPort) :
         mLocalSockfd(localSockfd), mLocalPort(localPort), mDestAddr(destIp, destPort),
-        mIsAlive(false), mSessionId(0)
+        mIsAlive(false), mSessionId(0), mSendErrorCount(0)
     {   }
 
 private:
@@ -143,6 +180,7 @@ private:
     Ipv4Address mDestAddr;
     bool mIsAlive;
     uint16_t mSessionId;
+    int mSendErrorCount; // 连续发送错误计数器
 };
 
 #endif //_RTPINSTANNCE_H_

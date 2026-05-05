@@ -24,7 +24,7 @@ unsigned int PSSTREAM_CTX[257] =
 	0x2f2bad8a,0x98366c8e,0x41102f83,0xf60dee87,0xf35da999,0x4440689d,0x9d662b90,0x2a7bea94,
 	0xe71db4e0,0x500075e4,0x892636e9,0x3e3bf7ed,0x3b6bb0f3,0x8c7671f7,0x555032fa,0xe24df3fe,
 	0x5ff0bcc6,0xe8ed7dc2,0x31cb3ecf,0x86d6ffcb,0x8386b8d5,0x349b79d1,0xedbd3adc,0x5aa0fbd8,
-	0xeee00c69,0x59fdcd6d,0x80db8e60,0x37c64f64,0x3296087a,0x858bc97e,0x5cad8a73,0xebb04b77,
+	0xeee00c69,0x59fdcd6d,0x80db8e60,0x37c64f64,0x3296005a,0x858bc97e,0x5cad8a73,0xebb04b77,
 	0x560d044f,0xe110c54b,0x38368646,0x8f2b4742,0x8a7b005c,0x3d66c158,0xe4408255,0x535d4351,
 	0x9e3b1d25,0x2926dc21,0xf0009f2c,0x471d5e28,0x424d1936,0xf550d832,0x2c769b3f,0x9b6b5a3b,
 	0x26d61503,0x91cbd407,0x48ed970a,0xfff0560e,0xfaa01110,0x4dbdd014,0x949b9319,0x2386521d,
@@ -105,6 +105,12 @@ unsigned int MediaPs_create_pes_header(unsigned char *buffer, MEDIAPS_PES_PACK_I
 		}
         pes_header_ext_len   +=  pes_header_stuff_len;
         pes->uPayloadLen     =   prg->uMaxPesLen - pes_header_basic_len - pes_header_ext_len;
+        
+        // 确保payload长度不为负数
+        if (pes->uPayloadLen > pes->uRestDataLen)
+        {
+            pes->uPayloadLen = pes->uRestDataLen;
+        }
     }
     else
     {
@@ -131,7 +137,35 @@ unsigned int MediaPs_create_pes_header(unsigned char *buffer, MEDIAPS_PES_PACK_I
 		}
     }
 
+    // 确保payload长度非负
+    if (pes->uPayloadLen > pes->uRestDataLen)
+    {
+        pes->uPayloadLen = pes->uRestDataLen;
+    }
+    
+    // 确保总长度不超过最大PES长度
+    unsigned int total_len = pes_header_basic_len + pes_header_ext_len + pes->uPayloadLen;
+    if (total_len > prg->uMaxPesLen && prg->uMaxPesLen > 0)
+    {
+        // 重新计算payload长度
+        pes->uPayloadLen = prg->uMaxPesLen - pes_header_basic_len - pes_header_ext_len;
+        if (pes->uPayloadLen > pes->uRestDataLen)
+        {
+            pes->uPayloadLen = pes->uRestDataLen;
+        }
+        if (pes->uPayloadLen > MAX_PES_PACKET_LEN)
+        {
+            pes->uPayloadLen = MAX_PES_PACKET_LEN;
+        }
+    }
+
     pes_header_len_syt = pes_header_basic_len + pes_header_ext_len + pes->uPayloadLen - 6;
+
+    // 确保pes_header_len_syt不会溢出（16位）
+    if (pes_header_len_syt > 0xFFFF)
+    {
+        pes_header_len_syt = 0xFFFF;
+    }
 
     // 生成 pes 头数据
     buffer[0] = 0x00;
@@ -224,6 +258,12 @@ int MediaPs_fill_PSH(unsigned char *buffer, MEDIAPS_COMPLEX_PROCESS_PARAM_T *prc
     
 	mux_rate = prg->uMaxByteRate / 50 + 1;
 	
+	// 限制mux_rate在合理范围内（22位）
+	if (mux_rate > 0x3FFFFF)
+	{
+		mux_rate = 0x3FFFFF;
+	}
+	
 	buffer[pos++]	= 0x00;
 	buffer[pos++]	= 0x00;
 	buffer[pos++]	= 0x01;
@@ -232,13 +272,13 @@ int MediaPs_fill_PSH(unsigned char *buffer, MEDIAPS_COMPLEX_PROCESS_PARAM_T *prc
 	buffer[pos++]	= 0x40					            //2bits	MPEG2标志 "01"
 				    | ((prc->uSysClkRef>>26) & 0x38) 	//3bits	system_clock_reference_base [32..30] 
 				    | 0x04					            //1bits	marker_bit				 	
-				    | ((prc->uSysClkRef>>27) & 0x03);	//2bits	system_clock_reference_base [29..28]
-	buffer[pos++]	= (prc->uSysClkRef>>19) & 0xff;    //8bits	system_clock_reference_base [27..20]
-	buffer[pos++]	= ((prc->uSysClkRef>>11) & 0xf8)	//5bits	system_clock_reference_base [19..15]
+				    | ((prc->uSysClkRef>>28) & 0x03);	//2bits	system_clock_reference_base [29..28]
+	buffer[pos++]	= (prc->uSysClkRef>>20) & 0xff;    //8bits	system_clock_reference_base [27..20]
+	buffer[pos++]	= ((prc->uSysClkRef>>12) & 0xf8)	//5bits	system_clock_reference_base [19..15]
 				    | 0x04					            //1bits	marker_bit
-				    | ((prc->uSysClkRef>>12) & 0x03);	//2bits	system_clock_reference_base [14..13]
-	buffer[pos++]	= (prc->uSysClkRef>>4) & 0xff;		//8bits	system_clock_reference_base [12..5]
-	buffer[pos++]	= ((prc->uSysClkRef<<4) & 0xf0)	//5bits	system_clock_reference_base [4..0]
+				    | ((prc->uSysClkRef>>13) & 0x03);	//2bits	system_clock_reference_base [14..13]
+	buffer[pos++]	= (prc->uSysClkRef>>5) & 0xff;		//8bits	system_clock_reference_base [12..5]
+	buffer[pos++]	= ((prc->uSysClkRef<<3) & 0xf8)	//5bits	system_clock_reference_base [4..0]
 				    | 0x04					//1bits	marker_bit
 				    | 0x00;					//2bits	system_clock_reference_ext [8..7]
 	buffer[pos++]	= 0x01;					//7bits	system_clock_reference_ext [6..0]
@@ -330,7 +370,7 @@ int MediaPs_fill_PSH(unsigned char *buffer, MEDIAPS_COMPLEX_PROCESS_PARAM_T *prc
 int MediaPs_fill_PSM(unsigned char * buffer,  MEDIAPS_PS_INFO_T *prg, MEDIAPS_COMPLEX_PROCESS_PARAM_T *prc)
 {
 	int pos, tmp_pos, tmp_len = 0;
-	int crc;
+	unsigned int crc;  // 修改为unsigned int以匹配MediaPs_mpeg2_crc返回类型
 	int len_pos;
 
     buffer[0] = 0x00;
@@ -430,12 +470,31 @@ int MediaPs_fill_PSM(unsigned char * buffer,  MEDIAPS_PS_INFO_T *prg, MEDIAPS_CO
     }
 
     //暂时填充修改2
-    buffer[tmp_pos]     = (unsigned char)((pos - tmp_pos - 2) >> 8); 
-    buffer[tmp_pos+1]   = (unsigned char)(pos - tmp_pos - 2);
+    if (pos - tmp_pos - 2 <= 0xFFFF)
+    {
+        buffer[tmp_pos]     = (unsigned char)((pos - tmp_pos - 2) >> 8); 
+        buffer[tmp_pos+1]   = (unsigned char)(pos - tmp_pos - 2);
+    }
+    else
+    {
+        // 长度超出16位范围，截断
+        buffer[tmp_pos]     = 0xFF; 
+        buffer[tmp_pos+1]   = 0xFF;
+    }
 
     //暂时填充修改1
-    buffer[4] = (pos - 2) >> 8;
-    buffer[5] = pos - 2;
+    int psm_length = pos - 6; // PSM长度不包括前6个字节(0x000001BC + length)
+    if (psm_length <= 0xFFFF)
+    {
+        buffer[4] = (psm_length >> 8) & 0xFF;
+        buffer[5] = psm_length & 0xFF;
+    }
+    else
+    {
+        // 长度超出16位范围，截断
+        buffer[4] = 0xFF;
+        buffer[5] = 0xFF;
+    }
 
 	crc = MediaPs_mpeg2_crc(buffer, pos);
     
@@ -604,6 +663,13 @@ int MediaPs_Process(void *handle, MEDIAPS_COMPLEX_PROCESS_PARAM_T *param)
     {
 		return MEDIAPS_ERR_PARA_NULL;
     }
+    
+    // 添加输入缓冲区边界检查
+    if (param->pUnitInBuf == NULL || param->uUnitInLen == 0)
+    {
+        return MEDIAPS_ERR_PARA_NULL;
+    }
+    
     pes = &prg->stPesCur;
 
     //根据输入处理 stream_id
@@ -620,7 +686,16 @@ int MediaPs_Process(void *handle, MEDIAPS_COMPLEX_PROCESS_PARAM_T *param)
         break;
     case FRAME_TYPE_PRIVT_FRAME:
         pes->uStreamid = prg->uPrivtStreamid;
-		memcpy(prg->PrivteHeader, param->pUnitInBuf, PS_PRIVATE_HEAD_LEN);
+        // 添加边界检查，确保输入缓冲区足够大
+        if (param->uUnitInLen >= PS_PRIVATE_HEAD_LEN)
+        {
+            memcpy(prg->PrivteHeader, param->pUnitInBuf, PS_PRIVATE_HEAD_LEN);
+        }
+        else
+        {
+            // 如果输入缓冲区太小，用默认值填充
+            memset(prg->PrivteHeader, 0, PS_PRIVATE_HEAD_LEN);
+        }
         break;
     default:
         return MEDIAPS_ERR_STREAM_TYPE;
@@ -669,11 +744,18 @@ int MediaPs_Process(void *handle, MEDIAPS_COMPLEX_PROCESS_PARAM_T *param)
     do
     {
 		if (FRAME_TYPE_PRIVT_FRAME == param->uFrameType
+			&& param->uUnitInLen >= 2
 			&& 0x01 == param->pUnitInBuf[0]
 		    && 0x01 == param->pUnitInBuf[1]) // 只对温度信息有效
 		{
 			mod_pos = pos;
 			pos += MediaPs_create_pes_header(&buffer[pos], pes, param, prg);
+			
+			// 检查输出缓冲区是否足够
+			if (pos > param->uOutBufSize)
+			{
+				return MEDIAPS_ERR_MEM_OVER;
+			}
 
 			pes_mod_len = pes->uPayloadLen & 3;
 			if (pes_mod_len)
@@ -685,18 +767,36 @@ int MediaPs_Process(void *handle, MEDIAPS_COMPLEX_PROCESS_PARAM_T *param)
 
 			if (!pes->uAddpts)
 			{
-				//pes->payload_len += PS_PRIVATE_HEAD_LEN;
+				// 检查是否有足够的空间添加私有头
+				if (pos + PS_PRIVATE_HEAD_LEN > param->uOutBufSize)
+				{
+					return MEDIAPS_ERR_MEM_OVER;
+				}
+				
 				memcpy(&buffer[pos], prg->PrivteHeader, PS_PRIVATE_HEAD_LEN);
 				pos += PS_PRIVATE_HEAD_LEN;
-				//pes->payload_len -= PS_PRIVATE_HEAD_LEN * 2;
+				
+				// 更新PES包长度，确保不超过输出缓冲区
 				src_len = (buffer[mod_pos + 4] << 8) + buffer[mod_pos + 5];
-				buffer[mod_pos + 4] = (unsigned char)(((src_len + PS_PRIVATE_HEAD_LEN - pes_mod_len) >> 8) & 0xff);
-				buffer[mod_pos + 5] = (unsigned char)((src_len + PS_PRIVATE_HEAD_LEN - pes_mod_len) & 0xff);
+				unsigned int new_len = src_len + PS_PRIVATE_HEAD_LEN - pes_mod_len;
+				if (mod_pos + 6 <= param->uOutBufSize)
+				{
+					buffer[mod_pos + 4] = (unsigned char)((new_len >> 8) & 0xff);
+					buffer[mod_pos + 5] = (unsigned char)(new_len & 0xff);
+				}
 			}
 			else
 			{
-				//覆盖原先的12字节头
-				memcpy(param->pUnitInBuf, prg->PrivteHeader, PS_PRIVATE_HEAD_LEN);
+				// 覆盖原先的12字节头，需要确保输入缓冲区足够大
+				if (param->uUnitInLen >= PS_PRIVATE_HEAD_LEN)
+				{
+					memcpy(param->pUnitInBuf, prg->PrivteHeader, PS_PRIVATE_HEAD_LEN);
+				}
+				else
+				{
+					// 输入缓冲区太小，无法安全覆盖
+					return MEDIAPS_ERR_MEM_OVER;
+				}
 			}
 		}
 		else
@@ -709,9 +809,16 @@ int MediaPs_Process(void *handle, MEDIAPS_COMPLEX_PROCESS_PARAM_T *param)
 			return MEDIAPS_ERR_MEM_OVER;
         }
 
-        memcpy(&buffer[pos], &param->pUnitInBuf[packed_len], pes->uPayloadLen);
-        packed_len  += pes->uPayloadLen;
-        pos         += pes->uPayloadLen;
+        // 确保不会超出输入数据长度
+        unsigned int copy_len = (packed_len + pes->uPayloadLen <= pes->uTotalDataLen) ? 
+                               pes->uPayloadLen : (pes->uTotalDataLen - packed_len);
+                               
+        if (copy_len > 0)
+        {
+            memcpy(&buffer[pos], &param->pUnitInBuf[packed_len], copy_len);
+            packed_len  += copy_len;
+            pos         += copy_len;
+        }
 
         pes->uAddpts         = 0;//除了第一个pes包外，其他包不添加pts和userdata
 /*        pes->add_user_data   = 0;*/

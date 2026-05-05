@@ -62,7 +62,6 @@ std::vector<InputDevice::DeviceInfo> InputDevice::enumerateDevices() {
                         }
                     }
             }
-       
             devices.push_back(info);
             close(fd);
         }
@@ -90,7 +89,7 @@ bool InputDevice::openDeviceByEventType(unsigned int event_type) {
     auto devices = enumerateDevices();
     for (const auto& device : devices) {
         if (std::find(device.supported_events.begin(), 
-                     device.supported_events.end(), event_type) != 
+                    device.supported_events.end(), event_type) != 
             device.supported_events.end()) {
             return openDevice(device.path);
         }
@@ -172,11 +171,11 @@ void InputDevice::onKeyEvent(const input_event& ev) {
 }
 
 void InputDevice::onAbsEvent(const input_event& ev) {
-     LOG_INFO("onAbsEvent code %d vlaue:%d \n",ev.code,ev.value);
+    LOG_INFO("onAbsEvent code %d vlaue:%d \n",ev.code,ev.value);
 }
 
 void InputDevice::onRelEvent(const input_event& ev) {
-     LOG_INFO("onRelEvent code %d vlaue:%d \n",ev.code,ev.value);
+    LOG_INFO("onRelEvent code %d vlaue:%d \n",ev.code,ev.value);
 }
 
 void InputDevice::onSynEvent(const input_event& ev) {

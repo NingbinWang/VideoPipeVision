@@ -45,7 +45,7 @@ int LvLinuxIndevInit(void)
     LOG_INFO("INPUT Path:%s\n",touch_device_path.c_str());
     
     if (!ts.openDevice(touch_device_path)) {
-         LOG_ERROR("can't open device: %s \n", touch_device_path.c_str());
+        LOG_ERROR("can't open device: %s \n", touch_device_path.c_str());
         return -1;
     }
     

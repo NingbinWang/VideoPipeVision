@@ -178,7 +178,6 @@ INT32 _sys_sem_wait (void* pSem, UINT32 uWaitTime)
         if (ret)
             return -ETIMEDOUT;
     }
-             
     return 0;   
 }
 
